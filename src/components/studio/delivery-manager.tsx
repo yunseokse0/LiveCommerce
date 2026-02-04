@@ -8,9 +8,10 @@ import type { Order } from '@/types/product';
 
 interface DeliveryManagerProps {
   className?: string;
+  adminMode?: boolean;
 }
 
-export function DeliveryManager({ className }: DeliveryManagerProps) {
+export function DeliveryManager({ className, adminMode = false }: DeliveryManagerProps) {
   const { user } = useAuth();
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,11 +19,14 @@ export function DeliveryManager({ className }: DeliveryManagerProps) {
 
   // 배송 목록 조회
   const fetchDeliveries = async () => {
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/delivery/list?bjId=${user.id}`);
+      const url = adminMode 
+        ? '/api/delivery/list'
+        : `/api/delivery/list?bjId=${user!.id}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('배송 목록 조회 실패');
 
       const data = await response.json();
@@ -36,7 +40,7 @@ export function DeliveryManager({ className }: DeliveryManagerProps) {
 
   useEffect(() => {
     fetchDeliveries();
-  }, [user]);
+  }, [user, adminMode]);
 
   // 배송 상태 업데이트
   const updateDeliveryStatus = async (orderId: string, status: string) => {

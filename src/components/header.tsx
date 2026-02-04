@@ -43,11 +43,8 @@ export function Header() {
             <Link href="/coins" className="text-sm hover:text-primary transition-colors px-2 py-1">
               코인
             </Link>
-            <Link href="/admin/ranking" className="text-sm hover:text-primary transition-colors px-2 py-1">
+            <Link href="/admin" className="text-sm hover:text-primary transition-colors px-2 py-1">
               관리자
-            </Link>
-            <Link href="/admin/products" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              제품관리
             </Link>
             <UserMenu />
           </nav>
@@ -112,18 +109,11 @@ export function Header() {
               코인
             </Link>
             <Link
-              href="/admin/ranking"
+              href="/admin"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
               관리자
-            </Link>
-            <Link
-              href="/admin/products"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
-            >
-              제품관리
             </Link>
             <div className="px-4 py-3 border-t border-zinc-800/80 mt-2">
               <UserMenu />

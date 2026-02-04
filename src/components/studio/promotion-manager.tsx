@@ -18,9 +18,10 @@ import type { Product } from '@/types/product';
 
 interface PromotionManagerProps {
   className?: string;
+  adminMode?: boolean;
 }
 
-export function PromotionManager({ className }: PromotionManagerProps) {
+export function PromotionManager({ className, adminMode = false }: PromotionManagerProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'coupon' | 'bogo' | 'gift'>('coupon');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,27 +75,34 @@ export function PromotionManager({ className }: PromotionManagerProps) {
 
   // 상품 목록 조회
   useEffect(() => {
-    if (!user) return;
+    if (!adminMode && !user) return;
 
-    fetch(`/api/products?bjId=${user.id}`)
+    const url = adminMode 
+      ? '/api/products?isActive=all'
+      : `/api/products?bjId=${user!.id}`;
+    
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data.success || data.products) {
           setProducts(data.products || []);
         }
       })
       .catch((error) => {
         console.error('상품 목록 조회 오류:', error);
       });
-  }, [user]);
+  }, [user, adminMode]);
 
   // 쿠폰 목록 조회
   const fetchCoupons = async () => {
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/coupons?bjId=${user.id}`);
+      const url = adminMode 
+        ? '/api/coupons'
+        : `/api/coupons?bjId=${user!.id}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('쿠폰 목록 조회 실패');
 
       const data = await response.json();
@@ -108,11 +116,14 @@ export function PromotionManager({ className }: PromotionManagerProps) {
 
   // 1+1 목록 조회
   const fetchBogo = async () => {
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/promotions/buy-one-get-one?bjId=${user.id}`);
+      const url = adminMode 
+        ? '/api/promotions/buy-one-get-one'
+        : `/api/promotions/buy-one-get-one?bjId=${user!.id}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('1+1 목록 조회 실패');
 
       const data = await response.json();
@@ -126,11 +137,14 @@ export function PromotionManager({ className }: PromotionManagerProps) {
 
   // 사은품 목록 조회
   const fetchGifts = async () => {
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/promotions/free-gifts?bjId=${user.id}`);
+      const url = adminMode 
+        ? '/api/promotions/free-gifts'
+        : `/api/promotions/free-gifts?bjId=${user!.id}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('사은품 목록 조회 실패');
 
       const data = await response.json();
@@ -150,12 +164,12 @@ export function PromotionManager({ className }: PromotionManagerProps) {
     } else if (activeTab === 'gift') {
       fetchGifts();
     }
-  }, [activeTab, user]);
+  }, [activeTab, user, adminMode]);
 
   // 쿠폰 생성/수정
   const handleCouponSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
@@ -174,7 +188,7 @@ export function PromotionManager({ className }: PromotionManagerProps) {
           maxDiscountAmount: couponForm.maxDiscountAmount ? parseFloat(couponForm.maxDiscountAmount) : undefined,
           usageLimit: couponForm.usageLimit ? parseInt(couponForm.usageLimit) : undefined,
           perUserLimit: couponForm.perUserLimit ? parseInt(couponForm.perUserLimit) : undefined,
-          bjId: user.id,
+          ...(adminMode ? {} : { bjId: user!.id }),
         }),
       });
 
@@ -207,7 +221,7 @@ export function PromotionManager({ className }: PromotionManagerProps) {
   // 1+1 생성/수정
   const handleBogoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
@@ -223,7 +237,7 @@ export function PromotionManager({ className }: PromotionManagerProps) {
           ...bogoForm,
           minQuantity: parseInt(bogoForm.minQuantity),
           usageLimit: bogoForm.usageLimit ? parseInt(bogoForm.usageLimit) : undefined,
-          bjId: user.id,
+          ...(adminMode ? {} : { bjId: user!.id }),
         }),
       });
 
@@ -253,7 +267,7 @@ export function PromotionManager({ className }: PromotionManagerProps) {
   // 사은품 생성/수정
   const handleGiftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
@@ -271,7 +285,7 @@ export function PromotionManager({ className }: PromotionManagerProps) {
           minQuantity: giftForm.minQuantity ? parseInt(giftForm.minQuantity) : undefined,
           stock: parseInt(giftForm.stock),
           usageLimit: giftForm.usageLimit ? parseInt(giftForm.usageLimit) : undefined,
-          bjId: user.id,
+          ...(adminMode ? {} : { bjId: user!.id }),
         }),
       });
 

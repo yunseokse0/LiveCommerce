@@ -11,9 +11,10 @@ import { getSpecialtiesByRegion } from '@/data/region-specialties';
 
 interface ProductManagerProps {
   onProductSelect?: (product: Product) => void;
+  adminMode?: boolean;
 }
 
-export function ProductManager({ onProductSelect }: ProductManagerProps) {
+export function ProductManager({ onProductSelect, adminMode = false }: ProductManagerProps) {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,11 +42,14 @@ export function ProductManager({ onProductSelect }: ProductManagerProps) {
 
   // 상품 목록 조회
   const fetchProducts = async () => {
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/products?bjId=${user.id}&isActive=true`);
+      const url = adminMode 
+        ? '/api/products?isActive=all'
+        : `/api/products?bjId=${user!.id}&isActive=true`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('상품 목록 조회 실패');
 
       const data = await response.json();
@@ -59,12 +63,12 @@ export function ProductManager({ onProductSelect }: ProductManagerProps) {
 
   useEffect(() => {
     fetchProducts();
-  }, [user]);
+  }, [user, adminMode]);
 
   // 상품 생성/수정
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!adminMode && !user) return;
 
     setIsLoading(true);
     try {
@@ -82,7 +86,7 @@ export function ProductManager({ onProductSelect }: ProductManagerProps) {
         isSpecialty: formData.isSpecialty,
         specialtyId: formData.isSpecialty && formData.specialtyId ? formData.specialtyId : undefined,
         regionId: formData.isSpecialty && formData.regionId ? formData.regionId : undefined,
-        bjId: user.id,
+        ...(adminMode ? {} : { bjId: user!.id }),
       };
 
       const url = editingProduct
