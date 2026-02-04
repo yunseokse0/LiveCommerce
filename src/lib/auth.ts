@@ -41,17 +41,33 @@ export async function signInWithEmail(email: string, password: string) {
   return { data, error };
 }
 
-export async function signUpWithEmail(email: string, password: string, name?: string) {
+export async function signUpWithEmail(
+  email: string,
+  password: string,
+  name?: string,
+  isSeller?: boolean
+) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         name: name || email.split('@')[0],
+        is_seller: isSeller || false,
       },
       emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
     },
   });
+
+  // user_profiles 테이블에 셀러 정보 저장
+  if (data.user && isSeller) {
+    await supabase.from('user_profiles').upsert({
+      id: data.user.id,
+      display_name: name || email.split('@')[0],
+      // is_seller는 user_metadata에 저장됨
+    });
+  }
+
   return { data, error };
 }
 
@@ -65,12 +81,21 @@ export async function getCurrentUser(): Promise<User | null> {
   
   if (!user) return null;
 
+  // user_profiles에서 추가 정보 조회
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
   return {
     id: user.id,
     email: user.email,
-    name: user.user_metadata?.name || user.email?.split('@')[0],
-    avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+    name: user.user_metadata?.name || profile?.display_name || user.email?.split('@')[0],
+    avatarUrl: user.user_metadata?.avatar_url || user.user_metadata?.picture || profile?.avatar_url,
     provider: user.app_metadata?.provider as 'google' | 'facebook' | 'kakao' | 'email',
+    isSeller: user.user_metadata?.is_seller || profile?.is_seller || false,
+    role: (profile?.role || user.user_metadata?.role || 'user') as 'user' | 'admin' | 'seller',
     createdAt: user.created_at,
   };
 }

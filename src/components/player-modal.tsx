@@ -14,5 +14,12 @@ export function PlayerModal() {
   const live = liveList.find((l) => l.bj.id === streamId);
   if (!live) return null;
 
-  return <UniversalPlayer bj={live.bj} title={live.title} streamUrl={live.streamUrl} />;
+  return (
+    <UniversalPlayer
+      bj={live.bj}
+      title={live.title}
+      streamUrl={live.streamUrl}
+      hlsUrl={live.hlsUrl}
+    />
+  );
 }

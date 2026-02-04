@@ -227,9 +227,12 @@ CREATE TABLE IF NOT EXISTS orders (
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   session_id text,
   total_amount numeric NOT NULL,
+  discount_amount numeric DEFAULT 0, -- 할인 금액
+  final_amount numeric, -- 최종 결제 금액
   status text DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'shipped', 'delivered', 'cancelled')),
   payment_method text,
   shipping_address text,
+  coupon_code text, -- 사용된 쿠폰 코드
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );

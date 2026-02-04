@@ -15,6 +15,7 @@ export function LoginForm({ onToggleMode, isSignUp = false }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isSeller, setIsSeller] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +27,7 @@ export function LoginForm({ onToggleMode, isSignUp = false }: LoginFormProps) {
     try {
       if (isSignUp) {
         const { signUpWithEmail } = await import('@/lib/auth');
-        const { error } = await signUpWithEmail(email, password, name);
+        const { error } = await signUpWithEmail(email, password, name, isSeller);
         if (error) throw error;
       } else {
         const { error } = await signInWithEmail(email, password);
@@ -71,22 +72,38 @@ export function LoginForm({ onToggleMode, isSignUp = false }: LoginFormProps) {
     <div className="w-full max-w-md mx-auto">
       <form onSubmit={handleEmailAuth} className="space-y-4">
         {isSignUp && (
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1.5">
-              이름
-            </label>
-            <div className="relative">
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="이름을 입력하세요"
-                className="w-full px-4 py-2.5 pl-11 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 text-sm sm:text-base"
-                required
-              />
+          <>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1.5">
+                이름
+              </label>
+              <div className="relative">
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="이름을 입력하세요"
+                  className="w-full px-4 py-2.5 pl-11 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 text-sm sm:text-base"
+                  required
+                />
+              </div>
             </div>
-          </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isSeller}
+                  onChange={(e) => setIsSeller(e.target.checked)}
+                  className="w-4 h-4 rounded border-zinc-700 bg-secondary text-amber-500 focus:ring-amber-500/50"
+                />
+                <span className="text-sm text-zinc-300">
+                  셀러로 가입하기 (상품 판매 및 방송 가능)
+                </span>
+              </label>
+            </div>
+          </>
         )}
 
         <div>

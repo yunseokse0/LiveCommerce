@@ -48,7 +48,7 @@ export function RegionLiveStreams({ regionId }: RegionLiveStreamsProps) {
     );
   }
 
-  if (filteredStreams.length === 0) {
+  if (streams.length === 0) {
     return (
       <div className="text-center py-12 rounded-xl border border-zinc-800/80 bg-card/50">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-800/50 mb-4">

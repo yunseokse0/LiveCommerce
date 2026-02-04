@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useLiveRanking } from '@/store/live-ranking';
 import { koreaRegions, regionSpecialties } from '@/data/korea-regions';
+import { koreaMapPathDetailed } from '@/data/korea-map-svg';
 import type { Region } from '@/types/region';
 import { Sparkles, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,13 +16,24 @@ interface KoreaMapProps {
 
 export function KoreaMap({ onRegionSelect, selectedRegionId }: KoreaMapProps) {
   const [hoveredRegionId, setHoveredRegionId] = useState<string | null>(null);
+  const [regionLiveCounts, setRegionLiveCounts] = useState<Record<string, number>>({});
   const { liveList } = useLiveRanking();
+
+  // 클라이언트에서만 실행되도록 useEffect 사용
+  useEffect(() => {
+    // 지역별 라이브 방송 수 계산 (프론트엔드 확인용 고정값)
+    const counts: Record<string, number> = {};
+    koreaRegions.forEach((region) => {
+      // 지역 ID를 기반으로 일관된 값 생성 (Hydration 에러 방지)
+      const hash = region.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      counts[region.id] = hash % 5; // 0-4 사이의 고정값
+    });
+    setRegionLiveCounts(counts);
+  }, []);
 
   // 지역별 라이브 방송 수 계산
   const getRegionLiveCount = (regionId: string) => {
-    // TODO: 실제로는 크리에이터의 지역 정보를 기반으로 계산
-    // 현재는 랜덤으로 시뮬레이션
-    return Math.floor(Math.random() * 5);
+    return regionLiveCounts[regionId] || 0;
   };
 
   const handleRegionClick = (region: Region) => {
@@ -35,127 +47,94 @@ export function KoreaMap({ onRegionSelect, selectedRegionId }: KoreaMapProps) {
         {/* 배경 그라데이션 효과 - 역동적인 애니메이션 */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 via-background to-emerald-900/20 rounded-3xl overflow-hidden">
           {/* 움직이는 그라데이션 오버레이 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent animate-[shimmer_3s_ease-in-out_infinite] pointer-events-none" />
-          <style jsx>{`
-            @keyframes shimmer {
-              0%, 100% { transform: translateX(-100%); }
-              50% { transform: translateX(100%); }
-            }
-          `}</style>
+          <div className="absolute inset-0 shimmer-animation bg-gradient-to-r from-transparent via-amber-500/5 to-transparent pointer-events-none" />
           {/* 지도 이미지 컨테이너 */}
           <div className="relative w-full h-full">
-            {/* 실제 한국 지도 이미지 - 외부 이미지 URL 사용 또는 로컬 이미지 */}
-            <div className="relative w-full h-full">
-              {/* 한국 지도 SVG (더 정확한 형태) */}
-              <svg
-                viewBox="0 0 800 1000"
-                className="w-full h-full"
-                preserveAspectRatio="xMidYMid meet"
-              >
-                <defs>
-                  {/* 지도 그라데이션 */}
-                  <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="rgba(20, 20, 30, 0.9)" />
-                    <stop offset="30%" stopColor="rgba(30, 30, 40, 0.8)" />
-                    <stop offset="70%" stopColor="rgba(40, 35, 50, 0.7)" />
-                    <stop offset="100%" stopColor="rgba(25, 25, 35, 0.9)" />
-                  </linearGradient>
-                  
-                  {/* 입체감 그림자 필터 */}
-                  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-                    <feOffset dx="2" dy="2" result="offsetblur"/>
-                    <feComponentTransfer>
-                      <feFuncA type="linear" slope="0.3"/>
-                    </feComponentTransfer>
-                    <feMerge>
-                      <feMergeNode/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                  
-                  {/* 글로우 효과 */}
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
+              {/* 한국 지도 SVG (오픈소스 데이터 기반) */}
+            <svg
+              viewBox="0 0 600 1200"
+              className="w-full h-full"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <defs>
+                {/* 지도 그라데이션 */}
+                <linearGradient id="mapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(30, 30, 40, 0.95)" />
+                  <stop offset="30%" stopColor="rgba(40, 35, 50, 0.9)" />
+                  <stop offset="70%" stopColor="rgba(35, 35, 45, 0.85)" />
+                  <stop offset="100%" stopColor="rgba(25, 25, 35, 0.95)" />
+                </linearGradient>
                 
-                {/* 한국 지도 윤곽 (더 정확한 형태) */}
-                <g filter="url(#shadow)">
-                  {/* 본토 */}
-                  <path
-                    d="M 200 150 
-                       L 280 160 L 350 180 L 420 220 
-                       L 480 280 L 520 350 L 540 420 
-                       L 530 500 L 500 580 L 460 640 
-                       L 400 680 L 320 700 L 240 690 
-                       L 180 660 L 140 610 L 120 550 
-                       L 110 480 L 120 410 L 150 350 
-                       L 180 280 L 200 220 Z"
-                    fill="url(#mapGradient)"
-                    stroke="rgba(251, 191, 36, 0.4)"
-                    strokeWidth="3"
-                    className="transition-all duration-500"
-                  />
-                  
-                  {/* 제주도 */}
-                  <ellipse
-                    cx="150"
-                    cy="900"
-                    rx="40"
-                    ry="60"
-                    fill="url(#mapGradient)"
-                    stroke="rgba(251, 191, 36, 0.4)"
-                    strokeWidth="2"
-                    className="transition-all duration-500"
-                  />
-                  
-                  {/* 지형감을 위한 하이라이트 */}
-                  <path
-                    d="M 200 150 
-                       L 280 160 L 350 180 L 420 220 
-                       L 480 280 L 520 350 L 540 420 
-                       L 530 500 L 500 580 L 460 640 
-                       L 400 680 L 320 700 L 240 690 
-                       L 180 660 L 140 610 L 120 550 
-                       L 110 480 L 120 410 L 150 350 
-                       L 180 280 L 200 220 Z"
-                    fill="url(#highlightGradient)"
-                    opacity="0.2"
-                    className="pointer-events-none"
-                  />
-                  
-                  <linearGradient id="highlightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="rgba(251, 191, 36, 0.3)" />
-                    <stop offset="100%" stopColor="rgba(251, 191, 36, 0)" />
-                  </linearGradient>
-                </g>
+                {/* 입체감 그림자 필터 */}
+                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+                  <feOffset dx="3" dy="3" result="offsetblur"/>
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.4"/>
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
                 
-                {/* 입체감을 위한 추가 레이어 */}
-                <g opacity="0.1">
-                  <path
-                    d="M 200 150 
-                       L 280 160 L 350 180 L 420 220 
-                       L 480 280 L 520 350 L 540 420 
-                       L 530 500 L 500 580 L 460 640 
-                       L 400 680 L 320 700 L 240 690 
-                       L 180 660 L 140 610 L 120 550 
-                       L 110 480 L 120 410 L 150 350 
-                       L 180 280 L 200 220 Z"
-                    fill="white"
-                    transform="translate(5, 5)"
-                  />
-                </g>
-              </svg>
+                {/* 글로우 효과 */}
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                
+                <linearGradient id="highlightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(251, 191, 36, 0.4)" />
+                  <stop offset="100%" stopColor="rgba(251, 191, 36, 0)" />
+                </linearGradient>
+              </defs>
+              
+              {/* 한국 본토 - 오픈소스 데이터 기반 */}
+              <g filter="url(#shadow)">
+                <path
+                  d={koreaMapPathDetailed.mainland}
+                  fill="url(#mapGradient)"
+                  stroke="rgba(251, 191, 36, 0.5)"
+                  strokeWidth="4"
+                  className="transition-all duration-500"
+                />
+                
+                {/* 제주도 */}
+                <path
+                  d={koreaMapPathDetailed.jeju}
+                  fill="url(#mapGradient)"
+                  stroke="rgba(251, 191, 36, 0.5)"
+                  strokeWidth="3"
+                  className="transition-all duration-500"
+                />
+                
+                {/* 지형감을 위한 하이라이트 */}
+                <path
+                  d={koreaMapPathDetailed.mainland}
+                  fill="url(#highlightGradient)"
+                  opacity="0.25"
+                  className="pointer-events-none"
+                />
+              </g>
+              
+              {/* 입체감을 위한 추가 레이어 */}
+              <g opacity="0.15">
+                <path
+                  d={koreaMapPathDetailed.mainland}
+                  fill="white"
+                  transform="translate(6, 6)"
+                />
+              </g>
+            </svg>
               
               {/* 실제 한국 지도 이미지를 사용하려면 아래 주석을 해제하고 이미지 URL을 설정하세요 */}
               {/* 
               <Image
-                src="/korea-map.png" // 또는 외부 이미지 URL
+                src="/korea-map.png"
                 alt="한국 지도"
                 fill
                 className="object-contain opacity-90"

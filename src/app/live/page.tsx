@@ -1,9 +1,18 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useLiveRankingPolling } from '@/hooks/use-live-ranking';
 import { LiveGrid } from '@/components/live-grid';
 import { Header } from '@/components/header';
 import { PlayerModal } from '@/components/player-modal';
+
+function PlayerModalWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <PlayerModal />
+    </Suspense>
+  );
+}
 
 export default function LivePage() {
   useLiveRankingPolling(30000);
@@ -17,7 +26,7 @@ export default function LivePage() {
           <LiveGrid />
         </div>
       </main>
-      <PlayerModal />
+      <PlayerModalWrapper />
     </>
   );
 }

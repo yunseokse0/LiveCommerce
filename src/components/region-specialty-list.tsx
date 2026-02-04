@@ -1,91 +1,207 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { regionSpecialties } from '@/data/korea-regions';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Sparkles, Calendar, MapPin, Filter } from 'lucide-react';
+import { getSpecialtiesByRegion, type Specialty, type Season } from '@/data/region-specialties';
 import Image from 'next/image';
-import { Package, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RegionSpecialtyListProps {
   regionId: string;
 }
 
-export function RegionSpecialtyList({ regionId }: RegionSpecialtyListProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const specialties = regionSpecialties[regionId] || [];
+const seasonColors: Record<Season, string> = {
+  봄: 'bg-green-500/20 text-green-400 border-green-500/30',
+  여름: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  가을: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  겨울: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  연중: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
+};
 
-  // 현재 계절 계산
-  const currentMonth = new Date().getMonth() + 1;
-  const getSeasonStatus = () => {
-    if (currentMonth >= 3 && currentMonth <= 5) return '봄';
-    if (currentMonth >= 6 && currentMonth <= 8) return '여름';
-    if (currentMonth >= 9 && currentMonth <= 11) return '가을';
-    return '겨울';
-  };
+const categoryIcons: Record<Specialty['category'], string> = {
+  과일: '🍎',
+  채소: '🥬',
+  수산물: '🐟',
+  축산물: '🥩',
+  가공식품: '🍯',
+  곡물: '🌾',
+  버섯: '🍄',
+  기타: '🌿',
+};
+
+export function RegionSpecialtyList({ regionId }: RegionSpecialtyListProps) {
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+  const [selectedSeason, setSelectedSeason] = useState<Season | '전체'>('전체');
+  const [selectedCategory, setSelectedCategory] = useState<Specialty['category'] | '전체'>('전체');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const regionSpecialties = getSpecialtiesByRegion(regionId);
+    
+    let filtered = regionSpecialties;
+    
+    if (selectedSeason !== '전체') {
+      filtered = filtered.filter(
+        (s) => s.seasons.includes(selectedSeason) || s.seasons.includes('연중')
+      );
+    }
+    
+    if (selectedCategory !== '전체') {
+      filtered = filtered.filter((s) => s.category === selectedCategory);
+    }
+    
+    setSpecialties(filtered);
+    setIsLoading(false);
+  }, [regionId, selectedSeason, selectedCategory]);
+
+  const allSeasons: (Season | '전체')[] = ['전체', '봄', '여름', '가을', '겨울', '연중'];
+  const allCategories: (Specialty['category'] | '전체')[] = [
+    '전체',
+    '과일',
+    '채소',
+    '수산물',
+    '축산물',
+    '가공식품',
+    '곡물',
+    '버섯',
+    '기타',
+  ];
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-32 sm:h-36 rounded-xl" />
-        ))}
+      <div className="text-center py-8 text-zinc-400">
+        <div className="inline-block w-6 h-6 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-2" />
+        <div>특산물 정보를 불러오는 중...</div>
       </div>
     );
   }
 
   if (specialties.length === 0) {
     return (
-      <div className="text-center py-12 text-zinc-400">
-        등록된 특산물이 없습니다.
+      <div className="text-center py-12 rounded-2xl border border-zinc-800/80 bg-card/50">
+        <Sparkles className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
+        <p className="text-zinc-400">등록된 특산물이 없습니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-      {specialties.map((specialty, index) => (
-        <div
-          key={index}
-          className={cn(
-            'group relative overflow-hidden rounded-xl border',
-            'bg-gradient-to-br from-card via-card/80 to-card/60',
-            'border-zinc-800/80 hover:border-amber-500/50',
-            'transition-all duration-300 hover:-translate-y-1',
-            'shadow-lg hover:shadow-xl hover:shadow-amber-500/10'
-          )}
-        >
-          {/* 배경 그라데이션 효과 */}
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <div className="space-y-4 sm:space-y-6">
+      {/* 필터 */}
+      <div className="space-y-3">
+        {/* 계절 필터 */}
+        <div>
+          <label className="block text-sm font-medium mb-2 text-zinc-400 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            계절별
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {allSeasons.map((season) => (
+              <button
+                key={season}
+                onClick={() => setSelectedSeason(season)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                  selectedSeason === season
+                    ? season === '전체'
+                      ? 'bg-amber-500 text-black'
+                      : seasonColors[season as Season]
+                    : 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700'
+                )}
+              >
+                {season}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* 내용 */}
-          <div className="relative p-4 sm:p-5">
-            {/* 아이콘 */}
-            <div className="mb-3 sm:mb-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30 group-hover:scale-110 transition-transform duration-300">
-                <Package className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400" />
+        {/* 카테고리 필터 */}
+        <div>
+          <label className="block text-sm font-medium mb-2 text-zinc-400 flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            카테고리
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {allCategories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                  selectedCategory === category
+                    ? category === '전체'
+                      ? 'bg-amber-500 text-black'
+                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                    : 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700'
+                )}
+              >
+                {category !== '전체' && (
+                  <span className="mr-1">{categoryIcons[category as Specialty['category']]}</span>
+                )}
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 특산물 그리드 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        {specialties.map((specialty) => (
+          <div
+            key={specialty.id}
+            className="group relative p-4 sm:p-5 rounded-xl border border-zinc-800/80 bg-card/50 hover:bg-card/70 transition-all duration-300 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10"
+          >
+            {/* 랜드마크 배지 */}
+            {specialty.isLandmark && (
+              <div className="absolute top-2 right-2 z-10">
+                <div className="px-2 py-1 rounded-full bg-gradient-to-r from-amber-500/30 to-amber-700/30 border border-amber-500/50 backdrop-blur-sm">
+                  <Sparkles className="w-3 h-3 text-amber-300" />
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* 카테고리 아이콘 */}
+            <div className="text-4xl sm:text-5xl mb-3">{categoryIcons[specialty.category]}</div>
 
             {/* 특산물명 */}
-            <h4 className="text-base sm:text-lg font-bold mb-2 group-hover:text-amber-300 transition-colors">
-              {specialty}
+            <h4 className="text-lg sm:text-xl font-bold mb-1 pr-8">
+              {specialty.name}
             </h4>
 
-            {/* 계절 정보 */}
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-400">
-              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>연중 판매</span>
+            {/* 세부 지역 */}
+            {specialty.subRegion && (
+              <div className="flex items-center gap-1 text-xs sm:text-sm text-zinc-400 mb-2">
+                <MapPin className="w-3 h-3" />
+                <span>{specialty.subRegion}</span>
+              </div>
+            )}
+
+            {/* 설명 */}
+            {specialty.description && (
+              <p className="text-xs sm:text-sm text-zinc-400 mb-3 line-clamp-2">
+                {specialty.description}
+              </p>
+            )}
+
+            {/* 계절 태그 */}
+            <div className="flex flex-wrap gap-1.5">
+              {specialty.seasons.map((season) => (
+                <span
+                  key={season}
+                  className={cn(
+                    'px-2 py-0.5 rounded text-xs font-medium border',
+                    seasonColors[season]
+                  )}
+                >
+                  {season}
+                </span>
+              ))}
             </div>
-
-            {/* 호버 시 글로우 효과 */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/10 group-hover:to-transparent transition-all duration-300 pointer-events-none" />
           </div>
-
-          {/* 입체감을 위한 그림자 */}
-          <div className="absolute inset-0 rounded-xl shadow-[inset_0_1px_10px_rgba(0,0,0,0.3)] pointer-events-none" />
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

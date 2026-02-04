@@ -1,6 +1,76 @@
+/* Leaflet CSS - @import는 파일 최상단에 위치해야 함 */
+@import 'leaflet/dist/leaflet.css';
+
+/* Video.js CSS */
+@import 'video.js/dist/video-js.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Leaflet 다크 모드 커스텀 스타일 */
+.leaflet-container {
+  background: #1a1a1a !important;
+}
+
+.leaflet-tile-container img {
+  filter: brightness(0.6) contrast(1.2);
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: rgba(24, 24, 27, 0.98) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(251, 191, 36, 0.4) !important;
+  border-radius: 12px !important;
+  color: #e4e4e7;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(251, 191, 36, 0.2) !important;
+  padding: 0 !important;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: rgba(24, 24, 27, 0.98) !important;
+  border: 1px solid rgba(251, 191, 36, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.custom-popup .leaflet-popup-close-button {
+  color: #fbbf24 !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  padding: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 12px !important;
+}
+
+.custom-popup .leaflet-popup-close-button:hover {
+  color: #f59e0b !important;
+  background: rgba(251, 191, 36, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-animation {
+  animation: shimmer 3s ease-in-out infinite;
+}
 
 :root {
   --background: oklch(0.145 0 0);
@@ -50,4 +120,90 @@ textarea {
   textarea {
     font-size: inherit;
   }
+}
+
+/* Video.js 다크 모드 커스텀 스타일 */
+.video-js {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+}
+
+.video-js .vjs-big-play-button {
+  background-color: rgba(251, 191, 36, 0.8);
+  border-color: rgba(251, 191, 36, 1);
+  border-radius: 50%;
+  width: 3em;
+  height: 3em;
+  line-height: 3em;
+  margin-top: -1.5em;
+  margin-left: -1.5em;
+  transition: all 0.3s;
+}
+
+.video-js .vjs-big-play-button:hover {
+  background-color: rgba(251, 191, 36, 1);
+  border-color: rgba(251, 191, 36, 1);
+  transform: scale(1.1);
+}
+
+.video-js .vjs-control-bar {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+  height: 3.5em;
+}
+
+.video-js .vjs-control {
+  color: #fbbf24;
+}
+
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: #fbbf24;
+}
+
+.video-js .vjs-load-progress {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.video-js .vjs-progress-control {
+  cursor: pointer;
+}
+
+.video-js .vjs-play-control:hover,
+.video-js .vjs-mute-control:hover,
+.video-js .vjs-fullscreen-control:hover {
+  color: #fbbf24;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 640px) {
+  .video-js .vjs-big-play-button {
+    width: 2.5em;
+    height: 2.5em;
+    line-height: 2.5em;
+    margin-top: -1.25em;
+    margin-left: -1.25em;
+  }
+
+  .video-js .vjs-control-bar {
+    height: 3em;
+  }
+}
+
+/* 로딩 스피너 */
+.video-js .vjs-loading-spinner {
+  border-color: #fbbf24 transparent transparent transparent;
+}
+
+/* 플레이어 래퍼 */
+.native-player-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000;
+}
+
+.native-player-wrapper .vjs-poster {
+  background-size: cover;
+  background-position: center;
 }

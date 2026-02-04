@@ -4,6 +4,8 @@ export interface User {
   name?: string;
   avatarUrl?: string;
   provider?: 'google' | 'facebook' | 'kakao' | 'email';
+  isSeller?: boolean; // 셀러 여부
+  role?: 'user' | 'admin' | 'seller'; // 사용자 역할
   createdAt: string;
 }
 

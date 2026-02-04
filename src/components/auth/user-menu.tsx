@@ -5,7 +5,7 @@ import { useAuth } from '@/store/auth';
 import { signOut } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { User, LogOut, Settings, ChevronDown, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function UserMenu() {
@@ -85,6 +85,17 @@ export function UserMenu() {
           </div>
           
           <div className="py-1">
+            <button
+              onClick={() => {
+                router.push('/studio');
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+            >
+              <Radio className="w-4 h-4" />
+              크리에이터 스튜디오
+            </button>
+            
             <button
               onClick={() => {
                 router.push('/profile');

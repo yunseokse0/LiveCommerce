@@ -34,8 +34,20 @@ export function Header() {
             <Link href="/map" className="text-sm hover:text-primary transition-colors px-2 py-1">
               지도
             </Link>
+            <Link href="/studio" className="text-sm hover:text-primary transition-colors px-2 py-1">
+              스튜디오
+            </Link>
+            <Link href="/orders" className="text-sm hover:text-primary transition-colors px-2 py-1">
+              주문내역
+            </Link>
+            <Link href="/coins" className="text-sm hover:text-primary transition-colors px-2 py-1">
+              코인
+            </Link>
             <Link href="/admin/ranking" className="text-sm hover:text-primary transition-colors px-2 py-1">
               관리자
+            </Link>
+            <Link href="/admin/products" className="text-sm hover:text-primary transition-colors px-2 py-1">
+              제품관리
             </Link>
             <UserMenu />
           </nav>
@@ -79,11 +91,39 @@ export function Header() {
               지도
             </Link>
             <Link
+              href="/studio"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+            >
+              스튜디오
+            </Link>
+            <Link
+              href="/orders"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+            >
+              주문내역
+            </Link>
+            <Link
+              href="/coins"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+            >
+              코인
+            </Link>
+            <Link
               href="/admin/ranking"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
               관리자
+            </Link>
+            <Link
+              href="/admin/products"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+            >
+              제품관리
             </Link>
             <div className="px-4 py-3 border-t border-zinc-800/80 mt-2">
               <UserMenu />

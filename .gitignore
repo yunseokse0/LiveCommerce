@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# streaming
+/public/streams
+/public/streams/**/*.m3u8
+/public/streams/**/*.ts

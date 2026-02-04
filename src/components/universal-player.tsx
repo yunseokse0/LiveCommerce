@@ -7,15 +7,17 @@ import { useLiveRanking } from '@/store/live-ranking';
 import { extractYouTubeVideoId } from '@/lib/utils';
 import { PlatformBadge } from '@/components/platform-badge';
 import { LiveChat } from '@/components/live-chat';
+import { NativePlayer } from '@/components/native-player';
 import type { BJ } from '@/types/bj';
 
 interface UniversalPlayerProps {
   bj: BJ;
   title: string;
   streamUrl: string;
+  hlsUrl?: string; // 자체 플랫폼 HLS 스트림 URL
 }
 
-export function UniversalPlayer({ bj, title, streamUrl }: UniversalPlayerProps) {
+export function UniversalPlayer({ bj, title, streamUrl, hlsUrl }: UniversalPlayerProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -52,7 +54,7 @@ export function UniversalPlayer({ bj, title, streamUrl }: UniversalPlayerProps) 
       <div className="h-full flex flex-col md:flex-row">
         {/* 비디오 플레이어 */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 relative min-h-[200px] sm:min-h-[300px] md:min-h-0">
+          <div className="flex-1 relative min-h-[200px] sm:min-h-[300px] md:min-h-0 bg-black">
             {bj.platform === 'youtube' && embedUrl ? (
               <iframe
                 src={embedUrl}
@@ -61,9 +63,16 @@ export function UniversalPlayer({ bj, title, streamUrl }: UniversalPlayerProps) 
                 allowFullScreen
                 style={{ minHeight: '200px' }}
               />
+            ) : bj.platform === 'native' && hlsUrl ? (
+              <NativePlayer
+                hlsUrl={hlsUrl}
+                autoplay={true}
+                controls={true}
+                className="w-full h-full"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-zinc-400 text-sm sm:text-base">
-                자체 플랫폼 플레이어 (구현 예정)
+                {hlsUrl ? '스트림을 로딩 중...' : '스트림 URL이 없습니다.'}
               </div>
             )}
           </div>

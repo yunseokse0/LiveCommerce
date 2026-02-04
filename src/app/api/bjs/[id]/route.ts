@@ -6,13 +6,14 @@ export const dynamic = 'force-dynamic';
 // 크리에이터 상세 조회
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { data, error } = await supabaseAdmin
       .from('bjs')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) {
@@ -38,9 +39,10 @@ export async function GET(
 // 크리에이터 수정
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, platform, channel_url, youtube_channel_id, thumbnail_url, description, is_active } = body;
 
@@ -56,7 +58,7 @@ export async function PATCH(
     const { data, error } = await supabaseAdmin
       .from('bjs')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -83,13 +85,14 @@ export async function PATCH(
 // 크리에이터 삭제
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { error } = await supabaseAdmin
       .from('bjs')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       throw error;

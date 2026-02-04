@@ -27,14 +27,16 @@ export function ProtectedRoute({
       return;
     }
 
-    // TODO: 관리자 권한 체크 로직 추가
-    if (requireAdmin && user) {
-      // 관리자 권한 확인
-      // const isAdmin = user.role === 'admin';
-      // if (!isAdmin) {
-      //   router.push('/');
-      // }
-    }
+    // 관리자 권한 체크 (임시로 비활성화 - 개발 중)
+    // TODO: 프로덕션 배포 전에 활성화 필요
+    // if (requireAdmin && user) {
+    //   const isAdmin = user.role === 'admin';
+    //   if (!isAdmin) {
+    //     // 관리자가 아닌 경우 홈으로 리다이렉트
+    //     router.push('/');
+    //     return;
+    //   }
+    // }
   }, [user, loading, initialized, requireAuth, requireAdmin, router]);
 
   if (!initialized || loading) {
@@ -51,6 +53,12 @@ export function ProtectedRoute({
   if (requireAuth && !user) {
     return null;
   }
+
+  // 관리자 권한 체크 (임시로 비활성화 - 개발 중)
+  // TODO: 프로덕션 배포 전에 활성화 필요
+  // if (requireAdmin && user && user.role !== 'admin') {
+  //   return null;
+  // }
 
   return <>{children}</>;
 }
