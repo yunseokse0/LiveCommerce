@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone', // Netlify 호환성을 위한 설정
   images: {
     remotePatterns: [
       {

@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
+  NETLIFY = "true"
+
+# 환경 변수 (Netlify 대시보드에서 설정 가능)
+# Site settings > Environment variables에서 설정하세요
+# NEXT_PUBLIC_SUPABASE_URL = ""
+# NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
+# NEXT_PUBLIC_CHAT_SERVER_URL = ""
+# NEXT_PUBLIC_CHAT_MOCK_MODE = "true"
