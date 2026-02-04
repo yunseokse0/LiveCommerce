@@ -11,7 +11,8 @@ export function PlayerModal() {
 
   if (!streamId) return null;
 
-  const live = liveList.find((l) => l.bj.id === streamId);
+  // streamId로 라이브 스트림 찾기 (bj.id 또는 id로 매칭)
+  const live = liveList.find((l) => l.bj.id === streamId || l.id === streamId || l.bjId === streamId);
   if (!live) return null;
 
   return (

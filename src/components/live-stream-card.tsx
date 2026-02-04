@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Play, Eye, Clock } from 'lucide-react';
 import type { LiveEntry } from '@/types/bj';
@@ -15,6 +15,13 @@ interface LiveStreamCardProps {
 
 export function LiveStreamCard({ stream, showRank = false, rank }: LiveStreamCardProps) {
   const [imageError, setImageError] = useState(false);
+  const router = useRouter();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // 플레이어 모달 열기
+    router.push(`/live?stream=${stream.bj.id}`, { scroll: false });
+  };
 
   const formatViewerCount = (count: number) => {
     if (count >= 10000) {
@@ -51,9 +58,9 @@ export function LiveStreamCard({ stream, showRank = false, rank }: LiveStreamCar
   };
 
   return (
-    <Link
-      href={stream.streamUrl}
-      className="group relative block rounded-2xl overflow-hidden border border-zinc-800/80 bg-card/50 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10"
+    <button
+      onClick={handleClick}
+      className="group relative w-full text-left block rounded-2xl overflow-hidden border border-zinc-800/80 bg-card/50 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 active:scale-[0.98] touch-manipulation"
     >
       {/* 썸네일 */}
       <div className="relative aspect-video bg-zinc-900 overflow-hidden">
@@ -139,6 +146,6 @@ export function LiveStreamCard({ stream, showRank = false, rank }: LiveStreamCar
           <span>{formatTimeAgo(stream.startedAt)}</span>
         </div>
       </div>
-    </Link>
+    </button>
   );
 }

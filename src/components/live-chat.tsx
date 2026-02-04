@@ -60,29 +60,38 @@ export function LiveChat({ streamId }: LiveChatProps) {
         ) : (
           messages.map((msg) => {
             const isOwnMessage = user && msg.userId === user.id;
+            const isSystemMessage = msg.userId === 'system';
             return (
               <div
                 key={msg.id}
                 className={`text-xs sm:text-sm break-words ${
                   isOwnMessage ? 'text-right' : ''
-                }`}
+                } ${isSystemMessage ? 'text-center text-zinc-500 italic' : ''}`}
               >
-                <div className="flex items-start gap-1.5 sm:gap-2">
-                  {!isOwnMessage && (
-                    <span className="font-medium text-amber-400 flex-shrink-0">
-                      {msg.nickname}:
-                    </span>
-                  )}
-                  <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
-                    <span className={isOwnMessage ? 'text-amber-400' : ''}>{msg.message}</span>
-                    <span className="ml-1.5 text-zinc-500 text-[10px]">
-                      {formatTime(msg.timestamp)}
-                    </span>
+                {isSystemMessage ? (
+                  <div className="text-center">
+                    <span className="text-zinc-500">{msg.message}</span>
                   </div>
-                  {isOwnMessage && (
-                    <span className="font-medium text-amber-400 flex-shrink-0">나:</span>
-                  )}
-                </div>
+                ) : (
+                  <div className="flex items-start gap-1.5 sm:gap-2">
+                    {!isOwnMessage && (
+                      <span className="font-medium text-amber-400 flex-shrink-0">
+                        {msg.nickname}:
+                      </span>
+                    )}
+                    <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
+                      <span className={isOwnMessage ? 'text-amber-400' : 'text-zinc-300'}>
+                        {msg.message}
+                      </span>
+                      <span className="ml-1.5 text-zinc-500 text-[10px]">
+                        {formatTime(msg.timestamp)}
+                      </span>
+                    </div>
+                    {isOwnMessage && (
+                      <span className="font-medium text-amber-400 flex-shrink-0">나:</span>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })
@@ -95,9 +104,15 @@ export function LiveChat({ streamId }: LiveChatProps) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder={!user ? '로그인 필요' : isConnected ? '메시지 입력...' : '연결 중...'}
             disabled={!user || !isConnected}
+            maxLength={200}
             className="flex-1 px-2.5 sm:px-3 py-2 text-sm sm:text-base rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <Button

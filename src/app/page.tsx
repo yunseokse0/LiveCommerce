@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { LiveStreamCard } from '@/components/live-stream-card';
 import { Button } from '@/components/ui/button';
 import { MiniRankingBoard } from '@/components/mini-ranking-board';
+import { PlayerModal } from '@/components/player-modal';
 import { 
   Radio, 
   TrendingUp, 
@@ -17,6 +18,14 @@ import {
 import Link from 'next/link';
 import { mockLiveStreams, mockReplayStreams } from '@/data/mock-live-streams';
 import type { LiveEntry } from '@/types/bj';
+
+function PlayerModalWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <PlayerModal />
+    </Suspense>
+  );
+}
 
 const categories = [
   { id: 'all', name: 'ALL 전체', icon: '📺' },
@@ -204,6 +213,7 @@ export default function HomePage() {
         </section>
       </main>
       <Footer />
+      <PlayerModalWrapper />
     </>
   );
 }

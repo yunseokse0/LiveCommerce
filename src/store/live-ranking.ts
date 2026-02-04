@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { RankingEntry, LiveEntry } from '@/types/bj';
+import { mockLiveStreams } from '@/data/mock-live-streams';
+import { mockRanking } from '@/data/mock-ranking';
 
 interface LiveRankingState {
   liveList: LiveEntry[];
@@ -13,12 +15,12 @@ interface LiveRankingState {
 }
 
 export const useLiveRanking = create<LiveRankingState>((set) => ({
-  liveList: [],
-  ranking: [],
+  liveList: mockLiveStreams, // 초기값으로 MOCK 데이터 설정
+  ranking: mockRanking, // 초기값으로 MOCK 데이터 설정
   isLoading: false,
   lastUpdated: null,
-  setLiveList: (list) => set({ liveList: list }),
-  setRanking: (ranking) => set({ ranking }),
+  setLiveList: (list) => set({ liveList: list.length > 0 ? list : mockLiveStreams }),
+  setRanking: (ranking) => set({ ranking: ranking.length > 0 ? ranking : mockRanking }),
   setLoading: (loading) => set({ isLoading: loading }),
   refresh: async () => {
     set({ isLoading: true });
@@ -31,16 +33,25 @@ export const useLiveRanking = create<LiveRankingState>((set) => ({
       const liveData = await liveRes.json();
       const rankingData = await rankingRes.json();
 
-      if (liveData.success) {
+      if (liveData.success && liveData.liveList && liveData.liveList.length > 0) {
         set({ liveList: liveData.liveList });
+      } else {
+        // API 실패 시 MOCK 데이터 유지
+        set({ liveList: mockLiveStreams });
       }
-      if (rankingData.success) {
+      
+      if (rankingData.success && rankingData.ranking && rankingData.ranking.length > 0) {
         set({ ranking: rankingData.ranking });
+      } else {
+        // API 실패 시 MOCK 데이터 유지
+        set({ ranking: mockRanking });
       }
+      
       set({ lastUpdated: new Date(), isLoading: false });
     } catch (error) {
-      console.error('데이터 새로고침 오류:', error);
-      set({ isLoading: false });
+      console.error('데이터 새로고침 오류, MOCK 데이터 사용:', error);
+      // 에러 발생 시에도 MOCK 데이터 유지
+      set({ liveList: mockLiveStreams, ranking: mockRanking, isLoading: false });
     }
   },
 }));

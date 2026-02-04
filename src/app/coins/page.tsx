@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { History, ArrowUp, ArrowDown } from 'lucide-react';
 import type { CoinTransaction } from '@/types/coin';
 import { useAuth } from '@/store/auth';
+import { mockCoinTransactions } from '@/data/mock-coins';
 
 export default function CoinsPage() {
   const { user } = useAuth();
@@ -19,16 +20,26 @@ export default function CoinsPage() {
 
     const fetchTransactions = async () => {
       setIsLoading(true);
+      // 먼저 MOCK 데이터 사용
+      const userTransactions = mockCoinTransactions
+        .filter((tx) => tx.userId === user.id)
+        .slice(0, 20);
+      
+      setTransactions(userTransactions);
+      setIsLoading(false);
+
+      // API 호출 시도 (백그라운드)
       try {
         const response = await fetch(`/api/coins/transactions?userId=${user.id}&limit=20`);
         if (response.ok) {
           const data = await response.json();
-          setTransactions(data.transactions || []);
+          if (data.success && data.transactions && data.transactions.length > 0) {
+            setTransactions(data.transactions);
+          }
         }
       } catch (error) {
-        console.error('거래 내역 조회 오류:', error);
-      } finally {
-        setIsLoading(false);
+        console.error('거래 내역 조회 오류, MOCK 데이터 사용:', error);
+        // 에러 발생 시 MOCK 데이터 유지
       }
     };
 

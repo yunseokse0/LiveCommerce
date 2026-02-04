@@ -1,14 +1,19 @@
 'use client';
 
 import { useLiveRanking } from '@/store/live-ranking';
+import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
-import Link from 'next/link';
 import { formatNumber } from '@/lib/utils';
 import { Play } from 'lucide-react';
 
 export function LiveGrid() {
   const { liveList, isLoading } = useLiveRanking();
+  const router = useRouter();
+
+  const handleClick = (live: LiveEntry) => {
+    router.push(`/live?stream=${live.bj.id}`, { scroll: false });
+  };
 
   if (isLoading) {
     return (
@@ -31,10 +36,10 @@ export function LiveGrid() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
       {liveList.map((live) => (
-        <Link
+        <button
           key={live.bj.id}
-          href={`/live?stream=${live.bj.id}`}
-          className="group relative block rounded-lg sm:rounded-xl overflow-hidden border border-zinc-800/80 active:border-amber-500/50 transition-all duration-300 active:scale-[0.98] touch-manipulation"
+          onClick={() => handleClick(live)}
+          className="group relative w-full text-left block rounded-lg sm:rounded-xl overflow-hidden border border-zinc-800/80 active:border-amber-500/50 transition-all duration-300 active:scale-[0.98] touch-manipulation"
         >
           <div className="relative aspect-video">
             {live.thumbnailUrl ? (
@@ -71,7 +76,7 @@ export function LiveGrid() {
             </h3>
             <p className="text-[10px] sm:text-xs text-zinc-400 truncate">{live.bj.name}</p>
           </div>
-        </Link>
+        </button>
       ))}
     </div>
   );

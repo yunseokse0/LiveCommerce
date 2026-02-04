@@ -33,8 +33,9 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl }: UniversalPlaye
   if (!isOpen) return null;
 
   const videoId = bj.platform === 'youtube' ? extractYouTubeVideoId(streamUrl) : null;
+  // YouTube 영상 재생을 위한 최적화된 embed URL
   const embedUrl = videoId
-    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`
+    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}&mute=0`
     : null;
 
   return (
@@ -59,9 +60,11 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl }: UniversalPlaye
               <iframe
                 src={embedUrl}
                 className="w-full h-full"
-                allow="autoplay; encrypted-media; fullscreen"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
                 style={{ minHeight: '200px' }}
+                frameBorder="0"
+                title={title}
               />
             ) : bj.platform === 'native' && hlsUrl ? (
               <NativePlayer

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart, ArrowLeft, Package, Tag } from 'lucide-react';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
+import { mockProducts } from '@/data/mock-products';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -20,15 +21,35 @@ export default function ProductDetailPage() {
     if (!productId) return;
 
     setIsLoading(true);
+    // 먼저 MOCK 데이터에서 찾기
+    const mockProduct = mockProducts.find((p) => p.id === productId);
+    if (mockProduct) {
+      setProduct(mockProduct);
+      setIsLoading(false);
+      return;
+    }
+
+    // MOCK 데이터에 없으면 API 호출
     fetch(`/api/products/${productId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data.success && data.product) {
           setProduct(data.product);
+        } else {
+          // API 실패 시 MOCK 데이터 사용
+          const fallbackProduct = mockProducts.find((p) => p.id === productId);
+          if (fallbackProduct) {
+            setProduct(fallbackProduct);
+          }
         }
       })
       .catch((error) => {
-        console.error('제품 조회 오류:', error);
+        console.error('제품 조회 오류, MOCK 데이터 사용:', error);
+        // 에러 발생 시 MOCK 데이터 사용
+        const fallbackProduct = mockProducts.find((p) => p.id === productId);
+        if (fallbackProduct) {
+          setProduct(fallbackProduct);
+        }
       })
       .finally(() => {
         setIsLoading(false);

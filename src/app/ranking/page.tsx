@@ -1,9 +1,19 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useLiveRankingPolling } from '@/hooks/use-live-ranking';
 import { RankingTable } from '@/components/ranking-table';
 import { RankingPodium } from '@/components/ranking-podium';
 import { Header } from '@/components/header';
+import { PlayerModal } from '@/components/player-modal';
+
+function PlayerModalWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <PlayerModal />
+    </Suspense>
+  );
+}
 
 export default function RankingPage() {
   useLiveRankingPolling(30000);
@@ -18,6 +28,7 @@ export default function RankingPage() {
           <RankingTable />
         </div>
       </main>
+      <PlayerModalWrapper />
     </>
   );
 }

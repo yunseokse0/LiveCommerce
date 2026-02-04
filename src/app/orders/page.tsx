@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/store/auth';
 import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
 import type { Order } from '@/types/product';
+import { mockOrders } from '@/data/mock-orders';
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -17,15 +18,28 @@ export default function OrdersPage() {
     if (!user) return;
 
     setIsLoading(true);
+    // 먼저 MOCK 데이터 사용
+    const userOrders = mockOrders.filter((o) => o.userId === user.id);
+    if (userOrders.length > 0) {
+      setOrders(userOrders);
+      setIsLoading(false);
+    }
+
+    // API 호출 시도
     fetch(`/api/orders?userId=${user.id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setOrders(data.orders || []);
+        if (data.success && data.orders && data.orders.length > 0) {
+          setOrders(data.orders);
+        } else {
+          // API 실패 시 MOCK 데이터 유지
+          setOrders(userOrders);
         }
       })
       .catch((error) => {
-        console.error('주문 목록 조회 오류:', error);
+        console.error('주문 목록 조회 오류, MOCK 데이터 사용:', error);
+        // 에러 발생 시 MOCK 데이터 유지
+        setOrders(userOrders);
       })
       .finally(() => {
         setIsLoading(false);
