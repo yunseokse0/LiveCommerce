@@ -136,6 +136,18 @@ export function PaymentButton({
       }
 
       // 성공 처리 (API 실패해도 진행)
+      // 로컬 스토리지에 주문 저장
+      try {
+        const { saveLocalOrder } = await import('@/data/mock-orders-storage');
+        saveLocalOrder({
+          ...orderData.order,
+          status: 'paid' as const,
+          paymentMethod: 'card',
+        });
+      } catch (error) {
+        console.log('로컬 주문 저장 오류:', error);
+      }
+
       onSuccess?.(orderData.order.id);
     } catch (error: any) {
       console.error('결제 오류:', error);

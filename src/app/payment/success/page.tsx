@@ -19,29 +19,35 @@ export default function PaymentSuccessPage() {
     const orderIdParam = searchParams.get('orderId');
     const amount = searchParams.get('amount');
 
-    if (paymentKey && orderIdParam && amount) {
-      // 결제 승인 처리
-      fetch('/api/payment/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: orderIdParam,
-          paymentKey,
-          amount: parseInt(amount),
-          paymentMethod: 'card',
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setOrderId(orderIdParam);
-          }
-        })
-        .catch((error) => {
-          console.error('결제 승인 오류:', error);
-        });
-    } else if (orderIdParam) {
+    if (orderIdParam) {
       setOrderId(orderIdParam);
+
+      // 로컬 스토리지에서 주문 상태 업데이트
+      try {
+        const { updateLocalOrder } = require('@/data/mock-orders-storage');
+        updateLocalOrder(orderIdParam, {
+          status: 'paid',
+          paymentMethod: 'card',
+        });
+      } catch (error) {
+        console.log('로컬 주문 업데이트 오류:', error);
+      }
+
+      // 결제 승인 처리 시도 (실패해도 무시)
+      if (paymentKey && amount) {
+        fetch('/api/payment/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: orderIdParam,
+            paymentKey,
+            amount: parseInt(amount),
+            paymentMethod: 'card',
+          }),
+        }).catch((error) => {
+          console.log('결제 승인 API 호출 실패, 로컬 처리만 사용:', error);
+        });
+      }
     }
   }, [searchParams]);
 

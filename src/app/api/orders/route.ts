@@ -259,37 +259,33 @@ export async function POST(request: Request) {
     // 최종 금액 계산 (할인 - 코인 결제)
     const finalAmount = Math.max(0, totalAmount - discountAmount - coinPaymentAmountFinal);
 
-    // 주문 생성
+    // 주문 생성 (프론트엔드 전용: mock 데이터)
     const orderId = crypto.randomUUID();
-    const sessionId = `session-${Date.now()}-${crypto.randomBytes(8).toString('hex')}`;
+    const sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .insert({
-        id: orderId,
-        user_id: userId,
-        session_id: sessionId,
-        total_amount: totalAmount,
-        discount_amount: discountAmount,
-        coin_payment_amount: coinPaymentAmountFinal,
-        final_amount: finalAmount,
-        status: 'pending',
-        shipping_address: shippingAddress,
-        coupon_code: couponCode || null,
-      })
-      .select()
-      .single();
-
-    if (orderError) {
-      console.error('주문 생성 오류:', orderError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: '주문을 생성할 수 없습니다.',
-        },
-        { status: 500 }
-      );
-    }
+    // Mock 주문 객체 생성
+    const order = {
+      id: orderId,
+      userId,
+      sessionId,
+      totalAmount,
+      discountAmount,
+      coinPaymentAmount: coinPaymentAmountFinal,
+      finalAmount,
+      status: 'pending' as const,
+      shippingAddress,
+      couponCode: couponCode || undefined,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      items: items.map((item: any) => ({
+        id: crypto.randomUUID(),
+        orderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        createdAt: new Date().toISOString(),
+      })),
+    };
 
     // 주문 상품 생성 (일반 상품 + 무료 상품)
     const allOrderItems = [
