@@ -31,26 +31,29 @@ export async function GET(
     }
 
     // JSON 필드 파싱 및 필드명 변환
-    const parseProduct = (product: any) => {
-      if (product.detail_images) {
+    const parseProduct = (product: Record<string, unknown>) => {
+      let detailImages: string[] = [];
+      let tags: string[] = [];
+      
+      if (product.detail_images && typeof product.detail_images === 'string') {
         try {
-          product.detail_images = JSON.parse(product.detail_images);
+          detailImages = JSON.parse(product.detail_images) as string[];
         } catch {
-          product.detail_images = [];
+          detailImages = [];
         }
       }
-      if (product.tags) {
+      if (product.tags && typeof product.tags === 'string') {
         try {
-          product.tags = JSON.parse(product.tags);
+          tags = JSON.parse(product.tags) as string[];
         } catch {
-          product.tags = [];
+          tags = [];
         }
       }
       return {
         ...product,
         thumbnailUrl: product.thumbnail_url,
         imageUrl: product.image_url,
-        detailImages: product.detail_images || [],
+        detailImages,
         detailDescription: product.detail_description,
         bjId: product.bj_id,
         regionId: product.region_id,
@@ -90,7 +93,25 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      description?: string | null;
+      price?: number;
+      stock?: number;
+      thumbnail_url?: string | null;
+      image_url?: string | null;
+      detail_images?: string | null;
+      detail_description?: string | null;
+      category?: string | null;
+      tags?: string | null;
+      is_specialty?: boolean;
+      specialty_id?: string | null;
+      region_id?: string | null;
+      is_active?: boolean;
+      updated_at: string;
+    } = {
+      updated_at: new Date().toISOString(),
+    };
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.price !== undefined) updateData.price = body.price;
@@ -105,7 +126,6 @@ export async function PATCH(
     if (body.specialtyId !== undefined) updateData.specialty_id = body.specialtyId || null;
     if (body.regionId !== undefined) updateData.region_id = body.regionId || null;
     if (body.isActive !== undefined) updateData.is_active = body.isActive;
-    updateData.updated_at = new Date().toISOString();
 
     const { data, error } = await supabaseAdmin
       .from('products')

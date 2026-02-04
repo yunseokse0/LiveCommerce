@@ -24,7 +24,7 @@ export function PromotionManager({ className }: PromotionManagerProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'coupon' | 'bogo' | 'gift'>('coupon');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPromotion, setEditingPromotion] = useState<any>(null);
+  const [editingPromotion, setEditingPromotion] = useState<Coupon | BuyOneGetOne | FreeGift | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // 쿠폰 상태

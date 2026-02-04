@@ -94,7 +94,11 @@ export async function PATCH(
     }
 
     // 배송 상태 업데이트
-    const updateData: any = {
+    const updateData: {
+      status: string;
+      updated_at: string;
+      shipping_address?: string;
+    } = {
       status,
       updated_at: new Date().toISOString(),
     };

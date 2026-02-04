@@ -14,7 +14,22 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      description?: string | null;
+      gift_product_id?: string | null;
+      min_purchase_amount?: number | null;
+      min_quantity?: number | null;
+      product_ids?: string | null;
+      valid_from?: string | null;
+      valid_until?: string | null;
+      stock?: number | null;
+      usage_limit?: number | null;
+      is_active?: boolean;
+      updated_at: string;
+    } = {
+      updated_at: new Date().toISOString(),
+    };
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.giftProductId !== undefined) updateData.gift_product_id = body.giftProductId;
@@ -26,7 +41,6 @@ export async function PATCH(
     if (body.stock !== undefined) updateData.stock = body.stock;
     if (body.usageLimit !== undefined) updateData.usage_limit = body.usageLimit;
     if (body.isActive !== undefined) updateData.is_active = body.isActive;
-    updateData.updated_at = new Date().toISOString();
 
     const { data, error } = await supabaseAdmin
       .from('free_gifts')
@@ -47,9 +61,19 @@ export async function PATCH(
     }
 
     // JSON 필드 파싱
+    let productIds: string[] = [];
+    
+    if (data.product_ids && typeof data.product_ids === 'string') {
+      try {
+        productIds = JSON.parse(data.product_ids) as string[];
+      } catch {
+        productIds = [];
+      }
+    }
+    
     const promotion = {
       ...data,
-      productIds: data.product_ids ? JSON.parse(data.product_ids) : [],
+      productIds,
       bjId: data.bj_id,
       giftProductId: data.gift_product_id,
       isActive: data.is_active,

@@ -24,12 +24,13 @@ export async function GET(
       success: true,
       bj: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('크리에이터 조회 오류:', error);
+    const errorMessage = error instanceof Error ? error.message : '크리에이터를 찾을 수 없습니다.';
     return NextResponse.json(
       {
         success: false,
-        error: error.message || '크리에이터를 찾을 수 없습니다.',
+        error: errorMessage,
       },
       { status: 404 }
     );
@@ -46,7 +47,15 @@ export async function PATCH(
     const body = await request.json();
     const { name, platform, channel_url, youtube_channel_id, thumbnail_url, description, is_active } = body;
 
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      platform?: string;
+      channel_url?: string;
+      youtube_channel_id?: string | null;
+      thumbnail_url?: string | null;
+      description?: string | null;
+      is_active?: boolean;
+    } = {};
     if (name) updateData.name = name;
     if (platform) updateData.platform = platform;
     if (channel_url) updateData.channel_url = channel_url;
@@ -70,12 +79,13 @@ export async function PATCH(
       success: true,
       bj: data,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('크리에이터 수정 오류:', error);
+    const errorMessage = error instanceof Error ? error.message : '크리에이터 수정에 실패했습니다.';
     return NextResponse.json(
       {
         success: false,
-        error: error.message || '크리에이터 수정에 실패했습니다.',
+        error: errorMessage,
       },
       { status: 500 }
     );
@@ -101,12 +111,13 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('크리에이터 삭제 오류:', error);
+    const errorMessage = error instanceof Error ? error.message : '크리에이터 삭제에 실패했습니다.';
     return NextResponse.json(
       {
         success: false,
-        error: error.message || '크리에이터 삭제에 실패했습니다.',
+        error: errorMessage,
       },
       { status: 500 }
     );

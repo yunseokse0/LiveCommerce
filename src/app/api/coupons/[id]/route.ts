@@ -30,10 +30,28 @@ export async function GET(
     }
 
     // JSON 필드 파싱
+    let productIds: string[] = [];
+    let categoryIds: string[] = [];
+    
+    if (data.product_ids && typeof data.product_ids === 'string') {
+      try {
+        productIds = JSON.parse(data.product_ids) as string[];
+      } catch {
+        productIds = [];
+      }
+    }
+    if (data.category_ids && typeof data.category_ids === 'string') {
+      try {
+        categoryIds = JSON.parse(data.category_ids) as string[];
+      } catch {
+        categoryIds = [];
+      }
+    }
+    
     const coupon = {
       ...data,
-      productIds: data.product_ids ? JSON.parse(data.product_ids) : [],
-      categoryIds: data.category_ids ? JSON.parse(data.category_ids) : [],
+      productIds,
+      categoryIds,
       bjId: data.bj_id,
       isActive: data.is_active,
       createdAt: data.created_at,
@@ -67,7 +85,24 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      description?: string | null;
+      type?: string;
+      value?: number;
+      min_purchase_amount?: number | null;
+      max_discount_amount?: number | null;
+      valid_from?: string | null;
+      valid_until?: string | null;
+      usage_limit?: number | null;
+      per_user_limit?: number | null;
+      product_ids?: string | null;
+      category_ids?: string | null;
+      is_active?: boolean;
+      updated_at: string;
+    } = {
+      updated_at: new Date().toISOString(),
+    };
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.type !== undefined) updateData.type = body.type;
@@ -81,7 +116,6 @@ export async function PATCH(
     if (body.productIds !== undefined) updateData.product_ids = body.productIds && body.productIds.length > 0 ? JSON.stringify(body.productIds) : null;
     if (body.categoryIds !== undefined) updateData.category_ids = body.categoryIds && body.categoryIds.length > 0 ? JSON.stringify(body.categoryIds) : null;
     if (body.isActive !== undefined) updateData.is_active = body.isActive;
-    updateData.updated_at = new Date().toISOString();
 
     const { data, error } = await supabaseAdmin
       .from('coupons')

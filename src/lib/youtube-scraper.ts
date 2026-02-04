@@ -32,7 +32,7 @@ export async function scrapeYouTubeLiveStreams(
 
       // ytInitialData JSON 파싱
       const scriptTags = $('script');
-      let ytInitialData: any = null;
+      let ytInitialData: Record<string, unknown> | null = null;
 
       for (let i = 0; i < scriptTags.length; i++) {
         const scriptContent = $(scriptTags[i]).html() || '';
@@ -64,31 +64,45 @@ export async function scrapeYouTubeLiveStreams(
       if (!ytInitialData) continue;
 
       // 라이브 방송 추출
-      const tabs = ytInitialData?.contents?.twoColumnBrowseResultsRenderer?.tabs;
+      const ytData = ytInitialData as Record<string, unknown>;
+      const contents = ytData?.contents as Record<string, unknown> | undefined;
+      const twoColumnBrowseResultsRenderer = contents?.twoColumnBrowseResultsRenderer as Record<string, unknown> | undefined;
+      const tabs = twoColumnBrowseResultsRenderer?.tabs as Array<Record<string, unknown>> | undefined;
       if (!tabs) continue;
 
       for (const tab of tabs) {
-        const tabRenderer = tab?.tabRenderer;
+        const tabObj = tab as Record<string, unknown>;
+        const tabRenderer = tabObj?.tabRenderer as Record<string, unknown> | undefined;
         if (!tabRenderer) continue;
 
-        const content = tabRenderer?.content;
+        const content = tabRenderer?.content as Record<string, unknown> | undefined;
         if (!content) continue;
 
         // 라이브 방송 찾기
         const items = extractLiveItems(content);
         for (const item of items) {
-          const videoId = item?.videoId;
-          const title = item?.title?.runs?.[0]?.text || item?.title?.simpleText || '';
-          const thumbnailUrl = item?.thumbnail?.thumbnails?.[0]?.url || '';
-          const viewerCount = parseViewerCount(item?.viewCountText?.simpleText || '');
-          const startedAt = item?.publishedTimeText?.simpleText || '';
+          const itemObj = item as Record<string, unknown>;
+          const videoId = itemObj?.videoId as string | undefined;
+          const titleObj = itemObj?.title as Record<string, unknown> | undefined;
+          const titleRuns = titleObj?.runs as Array<Record<string, unknown>> | undefined;
+          const title = titleRuns?.[0]?.text as string | undefined || (titleObj?.simpleText as string | undefined) || '';
+          const thumbnailObj = itemObj?.thumbnail as Record<string, unknown> | undefined;
+          const thumbnails = thumbnailObj?.thumbnails as Array<Record<string, unknown>> | undefined;
+          const thumbnailUrl = thumbnails?.[0]?.url as string | undefined || '';
+          const viewCountText = itemObj?.viewCountText as Record<string, unknown> | undefined;
+          const viewerCount = parseViewerCount((viewCountText?.simpleText as string | undefined) || '');
+          const publishedTimeText = itemObj?.publishedTimeText as Record<string, unknown> | undefined;
+          const startedAt = (publishedTimeText?.simpleText as string | undefined) || '';
+          const ownerText = itemObj?.ownerText as Record<string, unknown> | undefined;
+          const ownerRuns = ownerText?.runs as Array<Record<string, unknown>> | undefined;
+          const channelName = ownerRuns?.[0]?.text as string | undefined || '';
 
           if (videoId && title) {
             liveStreams.push({
               videoId,
               title,
               channelId,
-              channelName: item?.ownerText?.runs?.[0]?.text || '',
+              channelName,
               thumbnailUrl,
               viewerCount,
               startedAt,
@@ -105,29 +119,43 @@ export async function scrapeYouTubeLiveStreams(
   return liveStreams;
 }
 
-function extractLiveItems(content: any): any[] {
-  const items: any[] = [];
+function extractLiveItems(content: Record<string, unknown>): Array<Record<string, unknown>> {
+  const items: Array<Record<string, unknown>> = [];
 
   // 다양한 패턴으로 라이브 방송 찾기
+  const richGridRenderer = content?.richGridRenderer as Record<string, unknown> | undefined;
+  const sectionListRenderer = content?.sectionListRenderer as Record<string, unknown> | undefined;
+  const sectionContents = sectionListRenderer?.contents as Array<Record<string, unknown>> | undefined;
+  const firstSection = sectionContents?.[0] as Record<string, unknown> | undefined;
+  const itemSectionRenderer = firstSection?.itemSectionRenderer as Record<string, unknown> | undefined;
+  const shelfRenderer = firstSection?.shelfRenderer as Record<string, unknown> | undefined;
+  const shelfContent = shelfRenderer?.content as Record<string, unknown> | undefined;
+  const expandedShelfContentsRenderer = shelfContent?.expandedShelfContentsRenderer as Record<string, unknown> | undefined;
+  
   const patterns = [
-    content?.richGridRenderer?.contents,
-    content?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents,
-    content?.sectionListRenderer?.contents?.[0]?.shelfRenderer?.content?.expandedShelfContentsRenderer?.items,
+    richGridRenderer?.contents as Array<Record<string, unknown>> | undefined,
+    itemSectionRenderer?.contents as Array<Record<string, unknown>> | undefined,
+    expandedShelfContentsRenderer?.items as Array<Record<string, unknown>> | undefined,
   ];
 
   for (const pattern of patterns) {
     if (Array.isArray(pattern)) {
       for (const item of pattern) {
-        const videoRenderer = item?.richItemRenderer?.content?.videoRenderer ||
-                            item?.videoRenderer;
+        const itemObj = item as Record<string, unknown>;
+        const richItemRenderer = itemObj?.richItemRenderer as Record<string, unknown> | undefined;
+        const richContent = richItemRenderer?.content as Record<string, unknown> | undefined;
+        const videoRenderer1 = richContent?.videoRenderer as Record<string, unknown> | undefined;
+        const videoRenderer2 = itemObj?.videoRenderer as Record<string, unknown> | undefined;
+        const videoRenderer = videoRenderer1 || videoRenderer2;
         
         if (videoRenderer) {
           // 라이브 방송 확인
-          const badges = videoRenderer?.badges;
-          const isLive = badges?.some((badge: any) => 
-            badge?.liveBadgeRenderer || 
-            badge?.metadataBadgeRenderer?.label === 'LIVE'
-          );
+          const badges = videoRenderer?.badges as Array<Record<string, unknown>> | undefined;
+          const isLive = Array.isArray(badges) && badges.some((badge: unknown) => {
+            const b = badge as Record<string, unknown>;
+            return b?.liveBadgeRenderer || 
+                   (b?.metadataBadgeRenderer as Record<string, unknown>)?.label === 'LIVE';
+          });
 
           if (isLive) {
             items.push(videoRenderer);

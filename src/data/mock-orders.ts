@@ -117,7 +117,7 @@ export const mockOrders: Order[] = [
     coinPaymentAmount: 10000,
     finalAmount: 57000,
     coinEarned: 570,
-    status: 'processing',
+    status: 'paid',
     paymentMethod: 'coin',
     shippingAddress: '서울특별시 강남구 테헤란로 123',
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
