@@ -363,17 +363,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 결제 정보 반환 (토스페이먼츠 연동 준비)
+    // 결제 정보 반환 (프론트엔드 전용)
     return NextResponse.json({
       success: true,
-      order: {
-        ...order,
-        items: allOrderItems,
-        discountAmount,
-        finalAmount,
-        couponCode: couponCode || undefined,
-        freeGifts: giftItems,
-      },
+      order,
       payment: {
         orderId,
         amount: finalAmount, // 할인 적용된 최종 금액
@@ -382,10 +375,9 @@ export async function POST(request: Request) {
         coinPaymentAmount: coinPaymentAmountFinal,
         coinSpent,
         orderName: `주문 ${orderId.substring(0, 8)}`,
-        // 토스페이먼츠 연동 시 필요한 정보
-        customerName: userId, // 실제로는 사용자 이름 필요
-        successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment/success`,
-        failUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment/fail`,
+        customerName: userId,
+        successUrl: `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/payment/success?orderId=${orderId}`,
+        failUrl: `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/payment/fail?orderId=${orderId}`,
       },
     });
   } catch (error) {
