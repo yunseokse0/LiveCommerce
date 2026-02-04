@@ -42,10 +42,10 @@ export async function GET(request: Request) {
           userId: tx.userId,
           type: tx.type,
           amount: tx.amount,
-          balance: tx.balanceAfter,
+          balance: tx.balance,
           description: tx.description,
-          orderId: tx.referenceId,
-          status: 'completed',
+          orderId: tx.orderId,
+          status: tx.status,
           createdAt: tx.createdAt,
         }));
       
@@ -86,10 +86,10 @@ export async function GET(request: Request) {
         userId: tx.userId,
         type: tx.type,
         amount: tx.amount,
-        balance: tx.balanceAfter,
+        balance: tx.balance,
         description: tx.description,
-        orderId: tx.referenceId,
-        status: 'completed',
+        orderId: tx.orderId,
+        status: tx.status,
         createdAt: tx.createdAt,
       }));
     
