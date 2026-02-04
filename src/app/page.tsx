@@ -65,9 +65,9 @@ export default function HomePage() {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="min-h-screen bg-background">
+      <main className="flex-1 bg-background">
         {/* 히어로 섹션 - 라이브 진행 중 */}
         <section className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 md:py-12">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -214,6 +214,6 @@ export default function HomePage() {
       </main>
       <Footer />
       <PlayerModalWrapper />
-    </>
+    </div>
   );
 }

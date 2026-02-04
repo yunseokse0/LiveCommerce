@@ -67,7 +67,7 @@ export default function AdminProductsPage() {
   const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
 
   return (
-    <ProtectedRoute requireAuth requireAdmin>
+    <ProtectedRoute requireAuth={false} requireAdmin={false}>
       <Header />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-7xl">

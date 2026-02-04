@@ -5,7 +5,7 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t border-zinc-800/80 bg-background/95 backdrop-blur">
+    <footer className="mt-auto border-t border-zinc-800/80 bg-background/95 backdrop-blur">
       <div className="container mx-auto px-4 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* 회사 정보 */}
