@@ -92,8 +92,6 @@ export default function StudioPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  if (!user) return null;
-
   return (
     <ProtectedRoute requireAuth={false}>
       <Header />
@@ -126,15 +124,22 @@ export default function StudioPage() {
                 {!streamConfig ? (
                   <div className="space-y-4">
                     <p className="text-sm sm:text-base text-zinc-400">
-                      방송을 시작하려면 먼저 스트림 키를 생성하세요.
+                      {user 
+                        ? '방송을 시작하려면 먼저 스트림 키를 생성하세요.'
+                        : '로그인 후 스트림 키를 생성하여 방송을 시작할 수 있습니다.'}
                     </p>
                     <Button
                       onClick={generateStreamKey}
-                      disabled={isLoading}
+                      disabled={isLoading || !user}
                       className="w-full sm:w-auto"
                     >
                       {isLoading ? '생성 중...' : '스트림 키 생성'}
                     </Button>
+                    {!user && (
+                      <p className="text-xs text-zinc-500">
+                        스트림 키 생성을 위해 로그인이 필요합니다.
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
