@@ -12,8 +12,9 @@ import { execSync } from 'child_process';
 // FFmpeg 경로 자동 감지
 function getFFmpegPath(): string {
   try {
-    // @ffmpeg-installer/ffmpeg에서 경로 가져오기
-    const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+    // 동적 require로 빌드 시 오류 방지
+    // @ts-ignore - 동적 require
+    const ffmpegInstaller = eval('require')('@ffmpeg-installer/ffmpeg');
     return ffmpegInstaller.path || ffmpegInstaller.ffmpegPath || 'ffmpeg';
   } catch (e) {
     // 시스템에 설치된 FFmpeg 사용

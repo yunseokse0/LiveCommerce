@@ -41,6 +41,8 @@ const nextConfig = {
     }
     return config;
   },
+  // Turbopack에서 특정 모듈 제외
+  serverExternalPackages: ['@ffmpeg-installer/ffmpeg', 'fluent-ffmpeg', 'node-media-server'],
 }
 
 module.exports = nextConfig
