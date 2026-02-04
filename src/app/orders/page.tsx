@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/store/auth';
-import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Package, Truck, CheckCircle, Clock, X } from 'lucide-react';
 import type { Order } from '@/types/product';
 import { mockOrders } from '@/data/mock-orders';
 
@@ -12,6 +13,7 @@ export default function OrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
 
   // 주문 목록 조회
   useEffect(() => {
@@ -78,6 +80,56 @@ export default function OrdersPage() {
       default:
         return status;
     }
+  };
+
+  // 주문 취소
+  const handleCancelOrder = async (orderId: string) => {
+    if (!user) return;
+
+    const reason = prompt('취소 사유를 입력해주세요:');
+    if (!reason || !reason.trim()) {
+      return;
+    }
+
+    if (!confirm('정말 주문을 취소하시겠습니까?')) {
+      return;
+    }
+
+    setCancellingOrderId(orderId);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          reason: reason.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || '주문 취소 실패');
+      }
+
+      // 주문 목록 새로고침
+      const updatedOrders = orders.map((order) =>
+        order.id === orderId ? { ...order, status: 'cancelled' as const } : order
+      );
+      setOrders(updatedOrders);
+
+      alert('주문이 취소되었습니다.');
+    } catch (error: any) {
+      console.error('주문 취소 오류:', error);
+      alert(error.message || '주문 취소를 처리할 수 없습니다.');
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
+  // 취소 가능한 상태인지 확인
+  const canCancel = (status: string) => {
+    return status === 'pending' || status === 'paid';
   };
 
   return (
@@ -156,6 +208,22 @@ export default function OrdersPage() {
                       <p className="text-sm text-zinc-400">
                         {order.shippingAddress.split('\n')[0]}
                       </p>
+                    </div>
+                  )}
+
+                  {/* 취소 버튼 */}
+                  {canCancel(order.status) && (
+                    <div className="pt-4 border-t border-zinc-800/80 mt-4">
+                      <Button
+                        onClick={() => handleCancelOrder(order.id)}
+                        variant="outline"
+                        size="sm"
+                        disabled={cancellingOrderId === order.id}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        {cancellingOrderId === order.id ? '취소 처리 중...' : '주문 취소'}
+                      </Button>
                     </div>
                   )}
                 </div>

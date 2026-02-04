@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/auth/user-menu';
 import { useAuth } from '@/store/auth';
+import { useCart } from '@/store/cart';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { initialize } = useAuth();
+  const { getTotalItems } = useCart();
+  const cartItemCount = getTotalItems();
 
   useEffect(() => {
     initialize();
@@ -45,6 +48,14 @@ export function Header() {
             </Link>
             <Link href="/admin" className="text-sm hover:text-primary transition-colors px-2 py-1">
               관리자
+            </Link>
+            <Link href="/cart" className="relative p-2 hover:text-primary transition-colors">
+              <ShoppingCart className="w-5 h-5" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-bold">
+                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                </span>
+              )}
             </Link>
             <UserMenu />
           </nav>
@@ -114,6 +125,19 @@ export function Header() {
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
               관리자
+            </Link>
+            <Link
+              href="/cart"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              장바구니
+              {cartItemCount > 0 && (
+                <span className="ml-auto px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs font-bold">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
             <div className="px-4 py-3 border-t border-zinc-800/80 mt-2">
               <UserMenu />

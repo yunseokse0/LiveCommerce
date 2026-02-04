@@ -8,6 +8,8 @@ import { ShoppingCart, ArrowLeft, Package, Tag } from 'lucide-react';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { mockProducts } from '@/data/mock-products';
+import { useCart } from '@/store/cart';
+import { ReviewList } from '@/components/reviews/review-list';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -16,6 +18,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const { addItem } = useCart();
 
   useEffect(() => {
     if (!productId) return;
@@ -57,7 +60,8 @@ export default function ProductDetailPage() {
   }, [productId]);
 
   const handleAddToCart = () => {
-    // TODO: 장바구니 추가 기능
+    if (!product) return;
+    addItem(product, quantity);
     alert('장바구니에 추가되었습니다.');
   };
 
@@ -281,6 +285,12 @@ export default function ProductDetailPage() {
               />
             </div>
           )}
+
+          {/* 리뷰 섹션 */}
+          <div className="mt-8 sm:mt-12 pt-8 border-t border-zinc-800/80">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">리뷰</h2>
+            <ReviewList productId={product.id} />
+          </div>
         </div>
       </main>
     </>
