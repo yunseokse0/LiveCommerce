@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { formatNumber } from '@/lib/utils';
 import { Play } from 'lucide-react';
+import type { LiveEntry } from '@/types/bj';
 
 export function LiveGrid() {
   const { liveList, isLoading } = useLiveRanking();
