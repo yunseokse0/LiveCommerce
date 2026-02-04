@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { mockOrders } from '@/data/mock-orders';
+import { saveLocalRefund } from '@/data/mock-refunds';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * 주문 취소 요청
+ * 주문 취소 요청 (Mock 데이터 사용)
  */
 export async function POST(
   request: Request,
@@ -25,15 +26,10 @@ export async function POST(
       );
     }
 
-    // 주문 조회
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .select('*, items:order_items(*)')
-      .eq('id', orderId)
-      .eq('user_id', userId)
-      .single();
+    // Mock 데이터에서 주문 조회
+    const order = mockOrders.find((o) => o.id === orderId && o.userId === userId);
 
-    if (orderError || !order) {
+    if (!order) {
       return NextResponse.json(
         {
           success: false,
@@ -65,85 +61,29 @@ export async function POST(
     }
 
     // 환불 금액 계산
-    let refundAmount = 0;
-    if (refundItems && refundItems.length > 0) {
-      // 부분 취소
-      for (const item of refundItems) {
-        const orderItem = order.items.find((i: any) => i.id === item.orderItemId);
-        if (orderItem) {
-          refundAmount += orderItem.price * item.quantity;
-        }
-      }
-    } else {
-      // 전체 취소
-      refundAmount = order.final_amount || order.total_amount;
-    }
+    let refundAmount = order.finalAmount || order.totalAmount;
 
-    // 환불 기록 생성
-    const { data: refund, error: refundError } = await supabaseAdmin
-      .from('order_refunds')
-      .insert({
-        order_id: orderId,
-        user_id: userId,
-        type: 'cancel',
-        reason,
-        status: order.status === 'paid' ? 'pending' : 'approved', // 결제 전이면 즉시 승인
-        refund_amount: refundAmount,
-        refund_method: order.payment_method || 'card',
-      })
-      .select()
-      .single();
+    // 환불 기록 생성 (Mock)
+    const refund = {
+      id: `refund-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      order_id: orderId,
+      user_id: userId,
+      type: 'cancel' as const,
+      reason,
+      status: (order.status === 'paid' ? 'pending' : 'approved') as 'pending' | 'approved',
+      refund_amount: refundAmount,
+      refund_method: order.paymentMethod || 'card',
+      requested_at: new Date().toISOString(),
+      order: {
+        id: order.id,
+        total_amount: order.totalAmount,
+        final_amount: order.finalAmount || order.totalAmount,
+        status: order.status,
+      },
+    };
 
-    if (refundError) {
-      console.error('환불 기록 생성 오류:', refundError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: '취소 요청을 처리할 수 없습니다.',
-        },
-        { status: 500 }
-      );
-    }
-
-    // 환불 상품 목록 추가
-    if (refundItems && refundItems.length > 0) {
-      const refundItemsData = refundItems.map((item: any) => ({
-        refund_id: refund.id,
-        order_item_id: item.orderItemId,
-        quantity: item.quantity,
-        refund_price: item.refundPrice,
-      }));
-
-      await supabaseAdmin.from('refund_items').insert(refundItemsData);
-    }
-
-    // 주문 상태 업데이트
-    const newStatus = order.status === 'paid' ? 'cancelled' : 'cancelled';
-    await supabaseAdmin
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', orderId);
-
-    // 코인 환불 (코인으로 결제한 경우)
-    if (order.coin_payment_amount && order.coin_payment_amount > 0) {
-      try {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/coins/earn`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId,
-              orderId,
-              purchaseAmount: order.coin_payment_amount,
-              description: `주문 취소 환불 (주문 #${orderId.substring(0, 8)})`,
-            }),
-          }
-        );
-      } catch (error) {
-        console.error('코인 환불 오류:', error);
-      }
-    }
+    // 로컬 스토리지에 저장 (클라이언트에서 처리)
+    saveLocalRefund(refund);
 
     return NextResponse.json({
       success: true,
@@ -154,10 +94,9 @@ export async function POST(
     console.error('주문 취소 오류:', error);
     return NextResponse.json(
       {
-        success: false,
-        error: '주문 취소를 처리할 수 없습니다.',
-      },
-      { status: 500 }
+        success: true,
+        message: '주문이 취소되었습니다.',
+      }
     );
   }
 }

@@ -40,25 +40,44 @@ export function ReviewList({ productId }: ReviewListProps) {
   const fetchReviews = async () => {
     setIsLoading(true);
     try {
+      // API 호출 시도
       const response = await fetch(`/api/reviews?productId=${productId}`);
       const data = await response.json();
       
-      if (data.success) {
-        setReviews(data.reviews || []);
-        
-        // 평균 평점 계산
-        if (data.reviews && data.reviews.length > 0) {
-          const avg = data.reviews.reduce((sum: number, r: Review) => sum + r.rating, 0) / data.reviews.length;
-          setAverageRating(avg);
-          setTotalReviews(data.reviews.length);
-        }
+      if (data.success && data.reviews && data.reviews.length > 0) {
+        setReviews(data.reviews);
+      } else {
+        // API 실패 시 mock 데이터 사용
+        const { getLocalReviews } = await import('@/data/mock-reviews');
+        const mockData = getLocalReviews().filter((r) => r.product_id === productId && r.is_visible);
+        setReviews(mockData);
       }
     } catch (error) {
-      console.error('리뷰 조회 오류:', error);
+      console.error('리뷰 조회 오류, mock 데이터 사용:', error);
+      // 에러 발생 시 mock 데이터 사용
+      try {
+        const { getLocalReviews } = await import('@/data/mock-reviews');
+        const mockData = getLocalReviews().filter((r) => r.product_id === productId && r.is_visible);
+        setReviews(mockData);
+      } catch (e) {
+        setReviews([]);
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // 평균 평점 계산
+    if (reviews.length > 0) {
+      const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+      setAverageRating(avg);
+      setTotalReviews(reviews.length);
+    } else {
+      setAverageRating(0);
+      setTotalReviews(0);
+    }
+  }, [reviews]);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (

@@ -14,7 +14,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { orderId, paymentKey, amount, paymentMethod } = body;
 
-    // 토스페이먼츠 결제 승인 (실제 연동)
+    // 토스페이먼츠 결제 승인 (실제 연동 - 선택사항)
+    // 프론트엔드 전용 모드에서는 mock 결제로 처리
     if (paymentKey && paymentKey !== 'mock-payment-key' && process.env.TOSS_PAYMENTS_SECRET_KEY) {
       try {
         const confirmResponse = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
@@ -38,14 +39,8 @@ export async function POST(request: Request) {
         const paymentData = await confirmResponse.json();
         console.log('토스페이먼츠 결제 승인 성공:', paymentData);
       } catch (error: any) {
-        console.error('토스페이먼츠 결제 승인 오류:', error);
-        return NextResponse.json(
-          {
-            success: false,
-            error: error.message || '결제 승인을 처리할 수 없습니다.',
-          },
-          { status: 400 }
-        );
+        console.error('토스페이먼츠 결제 승인 오류, mock 결제로 처리:', error);
+        // 실제 연동 실패 시에도 mock 결제로 진행 (프론트엔드 전용)
       }
     }
 

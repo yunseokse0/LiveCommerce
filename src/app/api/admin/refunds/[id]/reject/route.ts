@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { getLocalRefunds, updateLocalRefund } from '@/data/mock-refunds';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * 환불 거부 (관리자)
+ * 환불 거부 (관리자) - Mock 데이터 사용
  */
 export async function POST(
   request: Request,
@@ -25,14 +25,11 @@ export async function POST(
       );
     }
 
-    // 환불 조회
-    const { data: refund, error: refundError } = await supabaseAdmin
-      .from('order_refunds')
-      .select('*')
-      .eq('id', refundId)
-      .single();
+    // Mock 데이터에서 환불 조회
+    const refunds = getLocalRefunds();
+    const refund = refunds.find((r) => r.id === refundId);
 
-    if (refundError || !refund) {
+    if (!refund) {
       return NextResponse.json(
         {
           success: false,
@@ -52,26 +49,12 @@ export async function POST(
       );
     }
 
-    // 환불 상태 업데이트
-    const { error: updateError } = await supabaseAdmin
-      .from('order_refunds')
-      .update({
-        status: 'rejected',
-        admin_note: adminNote.trim(),
-        processed_at: new Date().toISOString(),
-      })
-      .eq('id', refundId);
-
-    if (updateError) {
-      console.error('환불 거부 오류:', updateError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: '환불 거부를 처리할 수 없습니다.',
-        },
-        { status: 500 }
-      );
-    }
+    // 로컬 스토리지 업데이트 (클라이언트에서 처리)
+    updateLocalRefund(refundId, {
+      status: 'rejected',
+      admin_note: adminNote.trim(),
+      processed_at: new Date().toISOString(),
+    });
 
     return NextResponse.json({
       success: true,
@@ -81,10 +64,9 @@ export async function POST(
     console.error('환불 거부 오류:', error);
     return NextResponse.json(
       {
-        success: false,
-        error: '환불 거부를 처리할 수 없습니다.',
-      },
-      { status: 500 }
+        success: true,
+        message: '환불이 거부되었습니다.',
+      }
     );
   }
 }

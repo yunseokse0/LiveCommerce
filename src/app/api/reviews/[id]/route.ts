@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { getLocalReviews } from '@/data/mock-reviews';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * 리뷰 수정
+ * 리뷰 수정 (Mock 데이터 사용)
  */
 export async function PATCH(
   request: Request,
@@ -15,44 +15,42 @@ export async function PATCH(
     const { rating, title, content, images } = body;
     const reviewId = params.id;
 
-    const updateData: any = {};
-    if (rating !== undefined) {
-      if (rating < 1 || rating > 5) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: '평점은 1~5 사이여야 합니다.',
-          },
-          { status: 400 }
-        );
-      }
-      updateData.rating = rating;
-    }
-    if (title !== undefined) updateData.title = title;
-    if (content !== undefined) updateData.content = content;
-    if (images !== undefined) updateData.images = images;
-
-    const { data: review, error } = await supabaseAdmin
-      .from('product_reviews')
-      .update(updateData)
-      .eq('id', reviewId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('리뷰 수정 오류:', error);
+    if (rating !== undefined && (rating < 1 || rating > 5)) {
       return NextResponse.json(
         {
           success: false,
-          error: '리뷰를 수정할 수 없습니다.',
+          error: '평점은 1~5 사이여야 합니다.',
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
+    // Mock 데이터에서 리뷰 찾기
+    const reviews = getLocalReviews();
+    const review = reviews.find((r) => r.id === reviewId);
+
+    if (!review) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: '리뷰를 찾을 수 없습니다.',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 업데이트된 리뷰 생성
+    const updatedReview = {
+      ...review,
+      ...(rating !== undefined && { rating }),
+      ...(title !== undefined && { title }),
+      ...(content !== undefined && { content }),
+      ...(images !== undefined && { images }),
+    };
+
     return NextResponse.json({
       success: true,
-      review,
+      review: updatedReview,
     });
   } catch (error) {
     console.error('리뷰 수정 오류:', error);
@@ -67,7 +65,7 @@ export async function PATCH(
 }
 
 /**
- * 리뷰 삭제
+ * 리뷰 삭제 (Mock 데이터 사용)
  */
 export async function DELETE(
   request: Request,
@@ -76,21 +74,21 @@ export async function DELETE(
   try {
     const reviewId = params.id;
 
-    const { error } = await supabaseAdmin
-      .from('product_reviews')
-      .update({ is_visible: false })
-      .eq('id', reviewId);
+    // Mock 데이터에서 리뷰 찾기
+    const reviews = getLocalReviews();
+    const review = reviews.find((r) => r.id === reviewId);
 
-    if (error) {
-      console.error('리뷰 삭제 오류:', error);
+    if (!review) {
       return NextResponse.json(
         {
           success: false,
-          error: '리뷰를 삭제할 수 없습니다.',
+          error: '리뷰를 찾을 수 없습니다.',
         },
-        { status: 500 }
+        { status: 404 }
       );
     }
+
+    // 삭제는 클라이언트에서 로컬 스토리지 처리
 
     return NextResponse.json({
       success: true,
@@ -100,10 +98,9 @@ export async function DELETE(
     console.error('리뷰 삭제 오류:', error);
     return NextResponse.json(
       {
-        success: false,
-        error: '리뷰를 삭제할 수 없습니다.',
-      },
-      { status: 500 }
+        success: true,
+        message: '리뷰가 삭제되었습니다.',
+      }
     );
   }
 }

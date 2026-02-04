@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Star, X, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import Image from 'next/image';
+import { saveLocalReview } from '@/data/mock-reviews';
 
 interface ReviewFormProps {
   productId: string;
@@ -44,25 +45,49 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId,
-          userId: user.id,
-          orderId,
-          orderItemId,
-          rating,
-          title: title.trim() || undefined,
-          content: content.trim(),
-          images: images.filter(Boolean),
-        }),
-      });
+      // 리뷰 객체 생성
+      const review = {
+        id: `review-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        product_id: productId,
+        user_id: user.id,
+        order_id: orderId,
+        order_item_id: orderItemId,
+        rating,
+        title: title.trim() || undefined,
+        content: content.trim(),
+        images: images.filter(Boolean),
+        is_verified_purchase: !!orderId,
+        helpful_count: 0,
+        is_visible: true,
+        created_at: new Date().toISOString(),
+        user: {
+          id: user.id,
+          name: user.name || '사용자',
+          avatar_url: undefined,
+        },
+      };
 
-      const data = await response.json();
+      // 로컬 스토리지에 저장
+      saveLocalReview(review);
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || '리뷰 작성 실패');
+      // API 호출 시도 (실패해도 무시)
+      try {
+        await fetch('/api/reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId,
+            userId: user.id,
+            orderId,
+            orderItemId,
+            rating,
+            title: title.trim() || undefined,
+            content: content.trim(),
+            images: images.filter(Boolean),
+          }),
+        });
+      } catch (apiError) {
+        console.log('API 호출 실패, 로컬 저장만 사용:', apiError);
       }
 
       // 폼 초기화
