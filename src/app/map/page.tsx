@@ -189,20 +189,32 @@ export default function MapPage() {
                   </section>
                 </>
               ) : (
-                <div className="text-center py-12 sm:py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-amber-500/10 border border-amber-500/20 mb-4">
-                    <List className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
+                <>
+                  {/* 전체 특산물 헤더 */}
+                  <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 mb-6">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-br from-amber-500/30 to-amber-700/30 border border-amber-500/50 shadow-lg">
+                        <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-amber-300" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl sm:text-2xl font-bold mb-1">
+                          전국 특산물
+                        </h2>
+                        <p className="text-xs sm:text-sm text-zinc-400">
+                          모든 지역의 제철 특산물을 확인하세요
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-base sm:text-lg text-zinc-400 mb-4">
-                    지도에서 지역을 선택하거나 리스트에서 확인하세요
-                  </p>
-                  <button
-                    onClick={() => setViewMode('map')}
-                    className="px-4 py-2 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:bg-amber-500/30 transition-colors"
-                  >
-                    지도로 보기
-                  </button>
-                </div>
+
+                  {/* 전체 특산물 리스트 */}
+                  <section>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-4 px-1">
+                      전체 특산물
+                    </h3>
+                    <RegionSpecialtyListView />
+                  </section>
+                </>
               )}
             </div>
           )}

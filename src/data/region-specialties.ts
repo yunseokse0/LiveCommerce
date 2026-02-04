@@ -360,3 +360,24 @@ export function getSpecialtiesByCategory(category: Specialty['category']): Speci
 export function getLandmarkSpecialties(): Specialty[] {
   return regionSpecialties.filter((s) => s.isActive && s.isLandmark);
 }
+
+/**
+ * 전체 특산물 조회
+ */
+export function getAllSpecialties(): Specialty[] {
+  return regionSpecialties.filter((s) => s.isActive);
+}
+
+/**
+ * 계절 목록 조회
+ */
+export function getSpecialtySeasons(): Season[] {
+  return ['봄', '여름', '가을', '겨울', '연중'];
+}
+
+/**
+ * 카테고리 목록 조회
+ */
+export function getSpecialtyCategories(): Specialty['category'][] {
+  return ['과일', '채소', '수산물', '축산물', '가공식품', '곡물', '버섯', '기타'];
+}

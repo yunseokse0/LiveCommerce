@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Sparkles, Calendar, MapPin, Filter } from 'lucide-react';
-import { getSpecialtiesByRegion, type Specialty, type Season } from '@/data/region-specialties';
+import { getSpecialtiesByRegion, getAllSpecialties, type Specialty, type Season } from '@/data/region-specialties';
 import { cn } from '@/lib/utils';
 
 interface RegionSpecialtyListViewProps {
-  regionId: string;
+  regionId?: string; // 선택적으로 변경
 }
 
 const seasonColors: Record<Season, string> = {
@@ -36,9 +36,12 @@ export function RegionSpecialtyListView({ regionId }: RegionSpecialtyListViewPro
 
   useEffect(() => {
     setIsLoading(true);
-    const regionSpecialties = getSpecialtiesByRegion(regionId);
+    // regionId가 없으면 전체 특산물, 있으면 해당 지역 특산물
+    const allSpecialties = regionId 
+      ? getSpecialtiesByRegion(regionId)
+      : getAllSpecialties();
     
-    let filtered = regionSpecialties;
+    let filtered = allSpecialties;
     
     if (selectedSeason !== '전체') {
       filtered = filtered.filter(
