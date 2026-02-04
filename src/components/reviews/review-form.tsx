@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Star, X, Image as ImageIcon } from 'lucide-react';
+import { Star, X, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/store/auth';
+import Image from 'next/image';
 
 interface ReviewFormProps {
   productId: string;
@@ -22,6 +23,8 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
   const [images, setImages] = useState<string[]>([]);
   const [imageInput, setImageInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
     return (
@@ -87,6 +90,45 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of Array.from(files)) {
+      const tempId = `temp-${Date.now()}-${Math.random()}`;
+      setUploadingImages((prev) => [...prev, tempId]);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'reviews');
+
+        const response = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.url) {
+          setImages((prev) => [...prev, data.url]);
+        } else {
+          throw new Error(data.error || '업로드 실패');
+        }
+      } catch (error: any) {
+        console.error('이미지 업로드 오류:', error);
+        alert(`이미지 업로드 실패: ${error.message || '알 수 없는 오류'}`);
+      } finally {
+        setUploadingImages((prev) => prev.filter((id) => id !== tempId));
+      }
+    }
+
+    // 파일 입력 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -164,12 +206,34 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
       {/* 이미지 추가 */}
       <div>
         <label className="block text-sm font-medium mb-2">이미지 (선택사항)</label>
+        
+        {/* 파일 업로드 */}
+        <div className="mb-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileUpload}
+            className="hidden"
+            id="review-image-upload"
+          />
+          <label
+            htmlFor="review-image-upload"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-zinc-800/80 hover:border-amber-500/50 cursor-pointer transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            <span className="text-sm">이미지 업로드</span>
+          </label>
+        </div>
+
+        {/* URL 입력 (대체 방법) */}
         <div className="flex gap-2 mb-2">
           <input
             type="url"
             value={imageInput}
             onChange={(e) => setImageInput(e.target.value)}
-            placeholder="이미지 URL 입력"
+            placeholder="또는 이미지 URL 입력"
             className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 text-sm"
           />
           <Button
@@ -182,19 +246,31 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
             추가
           </Button>
         </div>
+
+        {/* 업로드 중 표시 */}
+        {uploadingImages.length > 0 && (
+          <div className="mb-2 flex items-center gap-2 text-sm text-zinc-400">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>이미지 업로드 중... ({uploadingImages.length})</span>
+          </div>
+        )}
+
+        {/* 이미지 미리보기 */}
         {images.length > 0 && (
           <div className="grid grid-cols-3 gap-2">
             {images.map((imageUrl, index) => (
               <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-zinc-800 border border-zinc-800/80">
-                <img
+                <Image
                   src={imageUrl}
                   alt={`리뷰 이미지 ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 33vw, 33vw"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center"
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors"
                 >
                   <X className="w-3 h-3 text-white" />
                 </button>

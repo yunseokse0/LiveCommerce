@@ -251,9 +251,10 @@ export default function CartPage() {
                     shippingAddress={shippingAddress}
                     couponCode={couponCode || undefined}
                     appliedPromotions={appliedPromotions}
+                    useTossPayments={!!process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY}
                     onSuccess={() => {
                       clearCart();
-                      router.push('/orders');
+                      router.push('/payment/success');
                     }}
                     onError={(error) => {
                       alert(error);

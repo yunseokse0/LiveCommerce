@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * 결제 완료 처리
+ * - 토스페이먼츠 결제 승인
  * - 주문 상태 업데이트
  * - 코인 적립
  */
@@ -12,6 +13,41 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { orderId, paymentKey, amount, paymentMethod } = body;
+
+    // 토스페이먼츠 결제 승인 (실제 연동)
+    if (paymentKey && paymentKey !== 'mock-payment-key' && process.env.TOSS_PAYMENTS_SECRET_KEY) {
+      try {
+        const confirmResponse = await fetch('https://api.tosspayments.com/v1/payments/confirm', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${Buffer.from(process.env.TOSS_PAYMENTS_SECRET_KEY + ':').toString('base64')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            paymentKey,
+            orderId,
+            amount,
+          }),
+        });
+
+        if (!confirmResponse.ok) {
+          const errorData = await confirmResponse.json();
+          throw new Error(errorData.message || '결제 승인 실패');
+        }
+
+        const paymentData = await confirmResponse.json();
+        console.log('토스페이먼츠 결제 승인 성공:', paymentData);
+      } catch (error: any) {
+        console.error('토스페이먼츠 결제 승인 오류:', error);
+        return NextResponse.json(
+          {
+            success: false,
+            error: error.message || '결제 승인을 처리할 수 없습니다.',
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     if (!orderId) {
       return NextResponse.json(

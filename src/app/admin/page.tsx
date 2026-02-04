@@ -14,11 +14,12 @@ import {
   Tag, 
   Trophy,
   Users,
-  LayoutDashboard
+  LayoutDashboard,
+  Receipt
 } from 'lucide-react';
 import Link from 'next/link';
 
-type AdminTab = 'dashboard' | 'products' | 'delivery' | 'promotions' | 'ranking' | 'creators';
+type AdminTab = 'dashboard' | 'products' | 'delivery' | 'promotions' | 'ranking' | 'creators' | 'refunds';
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
@@ -30,6 +31,7 @@ export default function AdminDashboardPage() {
     { id: 'promotions' as AdminTab, label: '프로모션', icon: Tag },
     { id: 'ranking' as AdminTab, label: '랭킹 관리', icon: Trophy },
     { id: 'creators' as AdminTab, label: '크리에이터', icon: Users },
+    { id: 'refunds' as AdminTab, label: '환불 관리', icon: Receipt },
   ];
 
   return (
@@ -187,6 +189,21 @@ export default function AdminDashboardPage() {
                   <h2 className="text-lg sm:text-xl font-semibold">크리에이터 관리</h2>
                 </div>
                 <BJList />
+              </div>
+            )}
+
+            {activeTab === 'refunds' && (
+              <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-6">
+                  <Receipt className="w-5 h-5 text-amber-400" />
+                  <h2 className="text-lg sm:text-xl font-semibold">환불 관리</h2>
+                </div>
+                <div className="text-center py-8">
+                  <p className="text-zinc-400 mb-4">환불 관리 페이지로 이동합니다.</p>
+                  <Button onClick={() => window.location.href = '/admin/refunds'}>
+                    환불 관리 페이지 열기
+                  </Button>
+                </div>
               </div>
             )}
           </div>

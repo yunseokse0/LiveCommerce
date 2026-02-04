@@ -6,6 +6,7 @@ import { CreditCard, Loader2 } from 'lucide-react';
 import type { CartItem } from '@/types/product';
 import { useAuth } from '@/store/auth';
 import { CoinPaymentOption } from './coin-payment-option';
+import { TossPaymentWidget } from './toss-payment-widget';
 
 interface PaymentButtonProps {
   items: CartItem[];
@@ -17,6 +18,7 @@ interface PaymentButtonProps {
   };
   onSuccess?: (orderId: string) => void;
   onError?: (error: string) => void;
+  useTossPayments?: boolean; // 토스페이먼츠 사용 여부
 }
 
 /**
@@ -30,11 +32,14 @@ export function PaymentButton({
   appliedPromotions,
   onSuccess,
   onError,
+  useTossPayments = false,
 }: PaymentButtonProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [coinPaymentAmount, setCoinPaymentAmount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
+  const [orderData, setOrderData] = useState<any>(null);
+  const [showPaymentWidget, setShowPaymentWidget] = useState(false);
 
   // 최종 금액 계산
   const calculateFinalAmount = () => {
@@ -101,13 +106,15 @@ export function PaymentButton({
 
       const paymentData = await paymentResponse.json();
 
-      // TODO: 토스페이먼츠 결제 위젯 열기
-      // 현재는 모의 결제 프로세스
-      if (paymentData.paymentUrl) {
-        // 실제 구현 시:
-        // window.location.href = paymentData.paymentUrl;
-        // 또는 토스페이먼츠 SDK 사용
+      // 토스페이먼츠 사용 시
+      if (useTossPayments && process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY) {
+        setOrderData(orderData);
+        setShowPaymentWidget(true);
+        return;
+      }
 
+      // 모의 결제 프로세스 (토스페이먼츠 미사용 시)
+      if (paymentData.paymentUrl) {
         // 모의 결제 완료
         const completeResponse = await fetch('/api/payment/complete', {
           method: 'POST',
@@ -133,6 +140,44 @@ export function PaymentButton({
       setIsLoading(false);
     }
   };
+
+  // 토스페이먼츠 결제 위젯이 표시되는 경우
+  if (showPaymentWidget && orderData) {
+    return (
+      <div className="space-y-4">
+        <TossPaymentWidget
+          orderId={orderData.order.id}
+          amount={finalAmount}
+          orderName={`주문 #${orderData.order.id.substring(0, 8)}`}
+          customerName={user?.name}
+          onSuccess={async (paymentKey) => {
+            // 결제 승인
+            const completeResponse = await fetch('/api/payment/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: orderData.order.id,
+                paymentKey,
+                amount: finalAmount,
+                paymentMethod: 'card',
+              }),
+            });
+
+            if (completeResponse.ok) {
+              onSuccess?.(orderData.order.id);
+            } else {
+              const errorData = await completeResponse.json();
+              onError?.(errorData.error || '결제 완료 처리 실패');
+            }
+          }}
+          onError={(error) => {
+            setShowPaymentWidget(false);
+            onError?.(error);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
