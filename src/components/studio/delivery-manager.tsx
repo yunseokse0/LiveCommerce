@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { Package, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import type { Order } from '@/types/product';
@@ -55,9 +56,10 @@ export function DeliveryManager({ className, adminMode = false }: DeliveryManage
       if (!response.ok) throw new Error('배송 상태 업데이트 실패');
 
       fetchDeliveries();
+      toast.success('배송 상태가 업데이트되었습니다.');
     } catch (error) {
       console.error('배송 상태 업데이트 오류:', error);
-      alert('배송 상태를 업데이트할 수 없습니다.');
+      toast.error('배송 상태를 업데이트할 수 없습니다.');
     } finally {
       setIsLoading(false);
     }

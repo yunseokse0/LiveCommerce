@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Package, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import type { Product } from '@/types/product';
@@ -18,6 +20,11 @@ export function ProductManager({ onProductSelect, adminMode = false }: ProductMa
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    productId: string | null;
+  }>({ open: false, productId: null });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -120,18 +127,25 @@ export function ProductManager({ onProductSelect, adminMode = false }: ProductMa
         regionId: '',
       });
       fetchProducts();
+      toast.success('상품이 저장되었습니다.');
     } catch (error) {
       console.error('상품 저장 오류:', error);
-      alert('상품을 저장할 수 없습니다.');
+      toast.error('상품을 저장할 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
   };
 
   // 상품 삭제
-  const handleDelete = async (productId: string) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  const handleDelete = (productId: string) => {
+    setDeleteDialog({ open: true, productId });
+  };
 
+  const handleDeleteConfirm = async () => {
+    const { productId } = deleteDialog;
+    if (!productId) return;
+
+    setDeleteDialog({ open: false, productId: null });
     setIsLoading(true);
     try {
       const response = await fetch(`/api/products/${productId}`, {
@@ -141,9 +155,10 @@ export function ProductManager({ onProductSelect, adminMode = false }: ProductMa
       if (!response.ok) throw new Error('상품 삭제 실패');
 
       fetchProducts();
+      toast.success('상품이 삭제되었습니다.');
     } catch (error) {
       console.error('상품 삭제 오류:', error);
-      alert('상품을 삭제할 수 없습니다.');
+      toast.error('상품을 삭제할 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -638,6 +653,17 @@ export function ProductManager({ onProductSelect, adminMode = false }: ProductMa
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, productId: null })}
+        onConfirm={handleDeleteConfirm}
+        title="상품 삭제"
+        message="정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        type="danger"
+        confirmText="삭제"
+        cancelText="취소"
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { Star, X, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import Image from 'next/image';
@@ -19,6 +20,7 @@ interface ReviewFormProps {
 export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCancel }: ReviewFormProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const toast = useToast();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [title, setTitle] = useState('');
@@ -41,7 +43,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
     e.preventDefault();
 
     if (!rating || !content.trim()) {
-      alert(t('reviews.ratingAndContentRequired'));
+      toast.warning(t('reviews.ratingAndContentRequired'));
       return;
     }
 
@@ -99,10 +101,11 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
       setImages([]);
       setImageInput('');
 
+      toast.success('리뷰가 작성되었습니다.');
       onSuccess?.();
     } catch (error: any) {
       console.error('리뷰 작성 오류:', error);
-      alert(error.message || '리뷰를 작성할 수 없습니다.');
+      toast.error(error.message || '리뷰를 작성할 수 없습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -146,7 +149,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
         }
       } catch (error: any) {
         console.error('이미지 업로드 오류:', error);
-        alert(`이미지 업로드 실패: ${error.message || '알 수 없는 오류'}`);
+        toast.error(`이미지 업로드 실패: ${error.message || '알 수 없는 오류'}`);
       } finally {
         setUploadingImages((prev) => prev.filter((id) => id !== tempId));
       }

@@ -4,15 +4,22 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Package, Search } from 'lucide-react';
 import type { Product } from '@/types/product';
 import Link from 'next/link';
 
 export default function AdminProductsPage() {
+  const toast = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    productId: string | null;
+  }>({ open: false, productId: null });
 
   // 상품 목록 조회
   const fetchProducts = async () => {
@@ -35,9 +42,15 @@ export default function AdminProductsPage() {
   }, []);
 
   // 상품 삭제
-  const handleDelete = async (productId: string) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+  const handleDelete = (productId: string) => {
+    setDeleteDialog({ open: true, productId });
+  };
 
+  const handleDeleteConfirm = async () => {
+    const { productId } = deleteDialog;
+    if (!productId) return;
+
+    setDeleteDialog({ open: false, productId: null });
     setIsLoading(true);
     try {
       const response = await fetch(`/api/products/${productId}`, {
@@ -47,9 +60,10 @@ export default function AdminProductsPage() {
       if (!response.ok) throw new Error('상품 삭제 실패');
 
       fetchProducts();
+      toast.success('상품이 삭제되었습니다.');
     } catch (error) {
       console.error('상품 삭제 오류:', error);
-      alert('상품을 삭제할 수 없습니다.');
+      toast.error('상품을 삭제할 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -180,6 +194,17 @@ export default function AdminProductsPage() {
           )}
         </div>
       </main>
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, productId: null })}
+        onConfirm={handleDeleteConfirm}
+        title="상품 삭제"
+        message="정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        type="danger"
+        confirmText="삭제"
+        cancelText="취소"
+      />
     </ProtectedRoute>
   );
 }

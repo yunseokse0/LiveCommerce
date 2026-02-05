@@ -5,6 +5,8 @@ import { Header } from '@/components/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/store/auth';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/hooks/use-toast';
 import { Package, Truck, CheckCircle, Clock, X } from 'lucide-react';
 import type { Order } from '@/types/product';
 import { mockOrders } from '@/data/mock-orders';
@@ -15,9 +17,15 @@ export default function OrdersPage() {
   const { user } = useAuth();
   const format = useFormat();
   const { t } = useTranslation();
+  const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancelDialog, setCancelDialog] = useState<{
+    open: boolean;
+    orderId: string | null;
+    reason: string;
+  }>({ open: false, orderId: null, reason: '' });
 
   // 주문 목록 조회
   useEffect(() => {
@@ -87,18 +95,19 @@ export default function OrdersPage() {
   };
 
   // 주문 취소
-  const handleCancelOrder = async (orderId: string) => {
+  const handleCancelOrder = (orderId: string) => {
     if (!user) return;
+    setCancelDialog({ open: true, orderId, reason: '' });
+  };
 
-    const reason = prompt('취소 사유를 입력해주세요:');
-    if (!reason || !reason.trim()) {
+  const handleCancelConfirm = async () => {
+    const { orderId, reason } = cancelDialog;
+    if (!orderId || !reason.trim()) {
+      toast.warning('취소 사유를 입력해주세요.');
       return;
     }
 
-    if (!confirm('정말 주문을 취소하시겠습니까?')) {
-      return;
-    }
-
+    setCancelDialog({ open: false, orderId: null, reason: '' });
     setCancellingOrderId(orderId);
     try {
       // 로컬 스토리지에 환불 기록 저장
@@ -145,7 +154,7 @@ export default function OrdersPage() {
       );
       setOrders(updatedOrders);
 
-      alert('주문이 취소되었습니다.');
+      toast.success('주문이 취소되었습니다.');
     } catch (error: any) {
       console.error('주문 취소 오류:', error);
       // 에러 발생해도 주문 상태 업데이트
@@ -153,7 +162,7 @@ export default function OrdersPage() {
         order.id === orderId ? { ...order, status: 'cancelled' as const } : order
       );
       setOrders(updatedOrders);
-      alert('주문이 취소되었습니다.');
+      toast.success('주문이 취소되었습니다.');
     } finally {
       setCancellingOrderId(null);
     }
@@ -264,6 +273,34 @@ export default function OrdersPage() {
           )}
         </div>
       </main>
+
+      <ConfirmDialog
+        open={cancelDialog.open}
+        onClose={() => setCancelDialog({ open: false, orderId: null, reason: '' })}
+        onConfirm={handleCancelConfirm}
+        title="주문 취소"
+        message={
+          <div className="space-y-3">
+            <p className="text-sm text-zinc-400">정말 주문을 취소하시겠습니까?</p>
+            <div>
+              <label className="block text-sm font-medium mb-2">취소 사유</label>
+              <textarea
+                value={cancelDialog.reason}
+                onChange={(e) =>
+                  setCancelDialog({ ...cancelDialog, reason: e.target.value })
+                }
+                placeholder="취소 사유를 입력해주세요"
+                rows={3}
+                className="w-full px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 resize-none text-sm"
+                autoFocus
+              />
+            </div>
+          </div>
+        }
+        type="warning"
+        confirmText="취소하기"
+        cancelText="돌아가기"
+      />
     </ProtectedRoute>
   );
 }

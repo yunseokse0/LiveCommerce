@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Wifi, WifiOff, Trash2, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useChat } from '@/hooks/use-chat';
 import { useAuth } from '@/store/auth';
 import { useFormat } from '@/hooks/use-format';
@@ -26,6 +27,13 @@ export function LiveChat({ streamId, creatorId, onPurchaseNotification, pinnedNo
   });
   const [input, setInput] = useState('');
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    type: 'delete' | 'ban';
+    messageId?: string;
+    userId?: string;
+    nickname?: string;
+  }>({ open: false, type: 'delete' });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 구매 알림 수신 시 처리
@@ -59,15 +67,29 @@ export function LiveChat({ streamId, creatorId, onPurchaseNotification, pinnedNo
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    if (confirm(t('chat.confirmDelete'))) {
-      deleteMessage(messageId);
-    }
+    setConfirmDialog({
+      open: true,
+      type: 'delete',
+      messageId,
+    });
   };
 
   const handleBanUser = (userId: string, nickname: string) => {
-    if (confirm(t('chat.confirmBan', { nickname }))) {
-      banUser(userId);
+    setConfirmDialog({
+      open: true,
+      type: 'ban',
+      userId,
+      nickname,
+    });
+  };
+
+  const handleConfirm = () => {
+    if (confirmDialog.type === 'delete' && confirmDialog.messageId) {
+      deleteMessage(confirmDialog.messageId);
+    } else if (confirmDialog.type === 'ban' && confirmDialog.userId) {
+      banUser(confirmDialog.userId);
     }
+    setConfirmDialog({ open: false, type: 'delete' });
   };
 
   return (
@@ -213,6 +235,20 @@ export function LiveChat({ streamId, creatorId, onPurchaseNotification, pinnedNo
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ open: false, type: 'delete' })}
+        onConfirm={handleConfirm}
+        title={
+          confirmDialog.type === 'delete'
+            ? t('chat.confirmDelete')
+            : t('chat.confirmBan', { nickname: confirmDialog.nickname || '' })
+        }
+        type={confirmDialog.type === 'ban' ? 'danger' : 'warning'}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+      />
     </div>
   );
 }

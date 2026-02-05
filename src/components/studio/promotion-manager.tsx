@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
   Edit, 
@@ -23,10 +25,15 @@ interface PromotionManagerProps {
 
 export function PromotionManager({ className, adminMode = false }: PromotionManagerProps) {
   const { user } = useAuth();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'coupon' | 'bogo' | 'gift'>('coupon');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<Coupon | BuyOneGetOne | FreeGift | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    couponId: string | null;
+  }>({ open: false, couponId: null });
 
   // 쿠폰 상태
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -210,11 +217,27 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
         perUserLimit: '',
       });
       fetchCoupons();
+      toast.success('쿠폰이 저장되었습니다.');
     } catch (error) {
       console.error('쿠폰 저장 오류:', error);
-      alert('쿠폰을 저장할 수 없습니다.');
+      toast.error('쿠폰을 저장할 수 없습니다.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    const { couponId } = deleteDialog;
+    if (!couponId) return;
+
+    setDeleteDialog({ open: false, couponId: null });
+    try {
+      await fetch(`/api/coupons/${couponId}`, { method: 'DELETE' });
+      fetchCoupons();
+      toast.success('쿠폰이 삭제되었습니다.');
+    } catch (error) {
+      console.error('쿠폰 삭제 오류:', error);
+      toast.error('쿠폰을 삭제할 수 없습니다.');
     }
   };
 
@@ -256,9 +279,10 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
         usageLimit: '',
       });
       fetchBogo();
+      toast.success('프로모션이 저장되었습니다.');
     } catch (error) {
       console.error('1+1 프로모션 저장 오류:', error);
-      alert('프로모션을 저장할 수 없습니다.');
+      toast.error('프로모션을 저장할 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -305,9 +329,10 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
         usageLimit: '',
       });
       fetchGifts();
+      toast.success('프로모션이 저장되었습니다.');
     } catch (error) {
       console.error('사은품 프로모션 저장 오류:', error);
-      alert('프로모션을 저장할 수 없습니다.');
+      toast.error('프로모션을 저장할 수 없습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -435,11 +460,7 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button
-                      onClick={async () => {
-                        if (!confirm('정말 삭제하시겠습니까?')) return;
-                        await fetch(`/api/coupons/${coupon.id}`, { method: 'DELETE' });
-                        fetchCoupons();
-                      }}
+                      onClick={() => setDeleteDialog({ open: true, couponId: coupon.id })}
                       size="sm"
                       variant="outline"
                       className="text-red-400 hover:text-red-300"
@@ -967,6 +988,17 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, couponId: null })}
+        onConfirm={handleDeleteConfirm}
+        title="쿠폰 삭제"
+        message="정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        type="danger"
+        confirmText="삭제"
+        cancelText="취소"
+      />
     </div>
   );
 }

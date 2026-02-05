@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import { maskAccountNumber, maskPhoneNumber } from '@/lib/data-masking';
 
@@ -30,11 +32,21 @@ interface Refund {
 }
 
 export default function AdminRefundsPage() {
+  const toast = useToast();
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNote, setAdminNote] = useState<Record<string, string>>({});
+  const [approveDialog, setApproveDialog] = useState<{
+    open: boolean;
+    refundId: string | null;
+  }>({ open: false, refundId: null });
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean;
+    refundId: string | null;
+    note: string;
+  }>({ open: false, refundId: null, note: '' });
 
   useEffect(() => {
     fetchRefunds();
@@ -79,9 +91,15 @@ export default function AdminRefundsPage() {
     }
   };
 
-  const handleApprove = async (refundId: string) => {
-    if (!confirm('환불을 승인하시겠습니까?')) return;
+  const handleApprove = (refundId: string) => {
+    setApproveDialog({ open: true, refundId });
+  };
 
+  const handleApproveConfirm = async () => {
+    const { refundId } = approveDialog;
+    if (!refundId) return;
+
+    setApproveDialog({ open: false, refundId: null });
     setProcessingId(refundId);
     try {
       // 로컬 스토리지 업데이트
@@ -106,23 +124,31 @@ export default function AdminRefundsPage() {
       }
 
       fetchRefunds();
-      alert('환불이 승인되었습니다.');
+      toast.success('환불이 승인되었습니다.');
     } catch (error: any) {
       console.error('환불 승인 오류:', error);
-      alert('환불이 승인되었습니다.');
+      toast.success('환불이 승인되었습니다.');
     } finally {
       setProcessingId(null);
     }
   };
 
-  const handleReject = async (refundId: string) => {
-    const note = adminNote[refundId] || prompt('거부 사유를 입력해주세요:');
-    if (!note || !note.trim()) {
+  const handleReject = (refundId: string) => {
+    setRejectDialog({
+      open: true,
+      refundId,
+      note: adminNote[refundId] || '',
+    });
+  };
+
+  const handleRejectConfirm = async () => {
+    const { refundId, note } = rejectDialog;
+    if (!refundId || !note.trim()) {
+      toast.warning('거부 사유를 입력해주세요.');
       return;
     }
 
-    if (!confirm('환불을 거부하시겠습니까?')) return;
-
+    setRejectDialog({ open: false, refundId: null, note: '' });
     setProcessingId(refundId);
     try {
       // 로컬 스토리지 업데이트
@@ -147,10 +173,10 @@ export default function AdminRefundsPage() {
       }
 
       fetchRefunds();
-      alert('환불이 거부되었습니다.');
+      toast.success('환불이 거부되었습니다.');
     } catch (error: any) {
       console.error('환불 거부 오류:', error);
-      alert('환불이 거부되었습니다.');
+      toast.success('환불이 거부되었습니다.');
     } finally {
       setProcessingId(null);
     }
@@ -322,6 +348,45 @@ export default function AdminRefundsPage() {
           )}
         </div>
       </main>
+
+      <ConfirmDialog
+        open={approveDialog.open}
+        onClose={() => setApproveDialog({ open: false, refundId: null })}
+        onConfirm={handleApproveConfirm}
+        title="환불 승인"
+        message="환불을 승인하시겠습니까?"
+        type="info"
+        confirmText="승인"
+        cancelText="취소"
+      />
+
+      <ConfirmDialog
+        open={rejectDialog.open}
+        onClose={() => setRejectDialog({ open: false, refundId: null, note: '' })}
+        onConfirm={handleRejectConfirm}
+        title="환불 거부"
+        message={
+          <div className="space-y-3">
+            <p className="text-sm text-zinc-400">환불을 거부하시겠습니까?</p>
+            <div>
+              <label className="block text-sm font-medium mb-2">거부 사유</label>
+              <textarea
+                value={rejectDialog.note}
+                onChange={(e) =>
+                  setRejectDialog({ ...rejectDialog, note: e.target.value })
+                }
+                placeholder="거부 사유를 입력해주세요"
+                rows={3}
+                className="w-full px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 resize-none text-sm"
+                autoFocus
+              />
+            </div>
+          </div>
+        }
+        type="danger"
+        confirmText="거부"
+        cancelText="취소"
+      />
     </ProtectedRoute>
   );
 }
