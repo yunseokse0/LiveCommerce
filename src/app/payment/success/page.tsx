@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { ReviewForm } from '@/components/reviews/review-form';
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -121,5 +121,24 @@ export default function PaymentSuccessPage() {
         </div>
       </main>
     </>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <>
+        <Header />
+        <main className="min-h-screen bg-background">
+          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-4xl">
+            <div className="text-center py-12">
+              <div className="animate-pulse">로딩 중...</div>
+            </div>
+          </div>
+        </main>
+      </>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }

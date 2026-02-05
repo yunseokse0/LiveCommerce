@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Header } from '@/components/header';
 import { RegionSpecialtyList } from '@/components/region-specialty-list';
 import { RegionSpecialtyListView } from '@/components/region-specialty-list-view';
 import { RegionLiveStreams } from '@/components/region-live-streams';
+import { RegionSelector } from '@/components/region-selector';
 import type { Region } from '@/types/region';
+import type { CountryRegion, CountryCode } from '@/types/country';
 import { MapPin, Sparkles, List, Map } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
+import { useI18n, countryLocaleMap } from '@/store/i18n';
+import { getRegionsByCountry, getRegionName } from '@/data/country-regions';
 
 // Leaflet은 클라이언트에서만 렌더링 (SSR 방지) - 로딩 최적화
 const KoreaMapLeaflet = dynamic(
@@ -28,12 +33,55 @@ const KoreaMapLeaflet = dynamic(
 );
 
 export default function MapPage() {
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const { locale } = useI18n();
+  const { t } = useTranslation();
+  const [selectedRegion, setSelectedRegion] = useState<CountryRegion | null>(null);
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [prevCountryCode, setPrevCountryCode] = useState<CountryCode | null>(null);
 
-  const handleRegionSelect = (region: Region) => {
+  const handleRegionSelect = (region: CountryRegion | null) => {
     setSelectedRegion(region);
   };
+
+  const handleMapRegionSelect = (region: Region | null) => {
+    // Region을 CountryRegion으로 변환
+    if (!region) {
+      setSelectedRegion(null);
+      return;
+    }
+    const countryRegion = regions.find(r => r.id === region.id);
+    if (countryRegion) {
+      setSelectedRegion(countryRegion);
+    }
+  };
+
+  const countryCode = countryLocaleMap[locale];
+  const regions = getRegionsByCountry(countryCode);
+
+  // 언어 변경 시 지역 선택 유지 로직
+  useEffect(() => {
+    // 이전 국가 코드가 있고, 현재 국가 코드와 다른 경우 (언어 변경)
+    if (prevCountryCode && prevCountryCode !== countryCode && selectedRegion) {
+      // 현재 국가의 지역 목록에서 같은 ID를 가진 지역 찾기
+      const matchingRegion = regions.find((r) => r.id === selectedRegion.id);
+      
+      if (!matchingRegion) {
+        // 같은 ID가 없으면 첫 번째 지역을 선택하거나 null로 초기화
+        // 사용자 요구사항: 지역 변경이 있어야 함 → 첫 번째 지역 선택
+        if (regions.length > 0) {
+          setSelectedRegion(regions[0]);
+        } else {
+          setSelectedRegion(null);
+        }
+      } else {
+        // 같은 ID가 있으면 유지 (같은 지역 ID를 가진 경우)
+        setSelectedRegion(matchingRegion);
+      }
+    }
+    
+    // 현재 국가 코드 저장
+    setPrevCountryCode(countryCode);
+  }, [locale, countryCode, regions, prevCountryCode, selectedRegion]);
 
   return (
     <>
@@ -47,36 +95,40 @@ export default function MapPage() {
                 <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30">
                   <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold">전국 제철 특산물 지도</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">{t('map.title')}</h1>
               </div>
-              {/* 리스트 뷰 토글 버튼 */}
-              <button
-                onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-amber-700/30 transition-all duration-200 active:scale-95"
-                aria-label={viewMode === 'map' ? '리스트 보기' : '지도 보기'}
-              >
-                {viewMode === 'map' ? (
-                  <>
-                    <List className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-                    <span className="text-xs sm:text-sm font-medium text-amber-400 hidden sm:inline">
-                      리스트
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Map className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-                    <span className="text-xs sm:text-sm font-medium text-amber-400 hidden sm:inline">
-                      지도
-                    </span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                {/* 지역 선택 */}
+                <RegionSelector
+                  selectedRegionId={selectedRegion?.id}
+                  onRegionSelect={handleRegionSelect}
+                />
+                {/* 리스트 뷰 토글 버튼 */}
+                <button
+                  onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-amber-700/30 transition-all duration-200 active:scale-95"
+                  aria-label={viewMode === 'map' ? t('map.listView') : t('map.mapView')}
+                >
+                  {viewMode === 'map' ? (
+                    <>
+                      <List className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                      <span className="text-xs sm:text-sm font-medium text-amber-400 hidden sm:inline">
+                        {t('map.listView')}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Map className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                      <span className="text-xs sm:text-sm font-medium text-amber-400 hidden sm:inline">
+                        {t('map.mapView')}
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
             <p className="text-sm sm:text-base text-zinc-400 px-1">
-              지역별 제철 특산물을 확인하고 라이브 방송을 만나보세요
-            </p>
-            <p className="text-xs sm:text-sm text-zinc-500 px-1 mt-1">
-              🗺️ 한눈에 보는 전국 제철 특산물 지도
+              {t('map.subtitle')}
             </p>
           </div>
 
@@ -86,7 +138,7 @@ export default function MapPage() {
               {/* 지도 섹션 */}
               <section className="mb-6 sm:mb-8">
                 <KoreaMapLeaflet
-                  onRegionSelect={handleRegionSelect}
+                  onRegionSelect={handleMapRegionSelect}
                   selectedRegionId={selectedRegion?.id}
                 />
               </section>
@@ -102,10 +154,10 @@ export default function MapPage() {
                       </div>
                       <div>
                         <h2 className="text-xl sm:text-2xl font-bold mb-1">
-                          {selectedRegion.name}
+                          {selectedRegion ? getRegionName(selectedRegion, locale) : t('map.allSpecialties')}
                         </h2>
                         <p className="text-xs sm:text-sm text-zinc-400">
-                          특산물과 라이브 방송을 확인하세요
+                          {t('map.regionSpecialties')}
                         </p>
                       </div>
                     </div>
@@ -114,15 +166,15 @@ export default function MapPage() {
                   {/* 특산물 목록 */}
                   <section>
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 px-1">
-                      지역 특산물
+                      {t('map.regionSpecialties')}
                     </h3>
-                    <RegionSpecialtyList regionId={selectedRegion.id} />
+                    <RegionSpecialtyList regionId={selectedRegion.id} countryCode={countryCode} />
                   </section>
 
                   {/* 라이브 방송 목록 */}
                   <section>
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 px-1">
-                      지역 라이브 방송
+                      {t('map.regionLiveStreams')}
                     </h3>
                     <RegionLiveStreams regionId={selectedRegion.id} />
                   </section>
@@ -136,7 +188,7 @@ export default function MapPage() {
                     <MapPin className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400" />
                   </div>
                   <p className="text-base sm:text-lg text-zinc-400">
-                    지도에서 지역을 선택하세요
+                    {t('map.selectRegion')}
                   </p>
                 </div>
               )}
@@ -156,10 +208,10 @@ export default function MapPage() {
                         </div>
                         <div>
                           <h2 className="text-xl sm:text-2xl font-bold mb-1">
-                            {selectedRegion.name}
+                            {selectedRegion ? getRegionName(selectedRegion, locale) : t('map.allSpecialties')}
                           </h2>
                           <p className="text-xs sm:text-sm text-zinc-400">
-                            특산물과 라이브 방송을 확인하세요
+                            {t('map.regionSpecialties')}
                           </p>
                         </div>
                       </div>
@@ -167,7 +219,7 @@ export default function MapPage() {
                         onClick={() => setSelectedRegion(null)}
                         className="px-3 py-1.5 text-xs sm:text-sm text-zinc-400 hover:text-amber-400 transition-colors"
                       >
-                        전체 보기
+                        {t('map.viewAll')}
                       </button>
                     </div>
                   </div>
@@ -175,15 +227,15 @@ export default function MapPage() {
                   {/* 특산물 리스트 */}
                   <section>
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 px-1">
-                      지역 특산물
+                      {t('map.regionSpecialties')}
                     </h3>
-                    <RegionSpecialtyListView regionId={selectedRegion.id} />
+                    <RegionSpecialtyListView regionId={selectedRegion.id} countryCode={countryCode} />
                   </section>
 
                   {/* 라이브 방송 목록 */}
                   <section>
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 px-1">
-                      지역 라이브 방송
+                      {t('map.regionLiveStreams')}
                     </h3>
                     <RegionLiveStreams regionId={selectedRegion.id} />
                   </section>
@@ -198,10 +250,10 @@ export default function MapPage() {
                       </div>
                       <div>
                         <h2 className="text-xl sm:text-2xl font-bold mb-1">
-                          전국 특산물
+                          {t('map.allSpecialties')}
                         </h2>
                         <p className="text-xs sm:text-sm text-zinc-400">
-                          모든 지역의 제철 특산물을 확인하세요
+                          {t('map.allSpecialtiesDesc')}
                         </p>
                       </div>
                     </div>
@@ -210,9 +262,9 @@ export default function MapPage() {
                   {/* 전체 특산물 리스트 */}
                   <section>
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 px-1">
-                      전체 특산물
+                      {t('map.allSpecialties')}
                     </h3>
-                    <RegionSpecialtyListView />
+                    <RegionSpecialtyListView countryCode={countryCode} />
                   </section>
                 </>
               )}

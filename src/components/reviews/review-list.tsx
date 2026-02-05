@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Star, ThumbsUp, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
+import { useFormat } from '@/hooks/use-format';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface Review {
   id: string;
@@ -28,10 +30,13 @@ interface ReviewListProps {
 }
 
 export function ReviewList({ productId }: ReviewListProps) {
+  const format = useFormat();
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
+  const [likedReviews, setLikedReviews] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchReviews();
@@ -79,6 +84,62 @@ export function ReviewList({ productId }: ReviewListProps) {
     }
   }, [reviews]);
 
+  // 낙관적 업데이트: 좋아요
+  const handleLikeReview = (reviewId: string, currentCount: number) => {
+    // 이미 좋아요를 눌렀는지 확인
+    if (likedReviews.has(reviewId)) {
+      // 취소 (낙관적 업데이트)
+      setLikedReviews((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(reviewId);
+        return newSet;
+      });
+      
+      // UI 즉시 업데이트
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === reviewId ? { ...r, helpful_count: Math.max(0, r.helpful_count - 1) } : r
+        )
+      );
+    } else {
+      // 좋아요 (낙관적 업데이트)
+      setLikedReviews((prev) => new Set(prev).add(reviewId));
+      
+      // UI 즉시 업데이트
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === reviewId ? { ...r, helpful_count: r.helpful_count + 1 } : r
+        )
+      );
+    }
+
+    // 실제 운영 시 서버에 동기화 (실패 시 롤백 가능)
+    /*
+    fetch(`/api/reviews/${reviewId}/like`, {
+      method: 'POST',
+    })
+      .then((res) => res.json())
+      .catch((error) => {
+        console.error('좋아요 실패:', error);
+        // 롤백: 이전 상태로 복원
+        setLikedReviews((prev) => {
+          const newSet = new Set(prev);
+          if (likedReviews.has(reviewId)) {
+            newSet.delete(reviewId);
+          } else {
+            newSet.add(reviewId);
+          }
+          return newSet;
+        });
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId ? { ...r, helpful_count: currentCount } : r
+          )
+        );
+      });
+    */
+  };
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
       <Star
@@ -122,7 +183,7 @@ export function ReviewList({ productId }: ReviewListProps) {
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={star} className="flex items-center gap-2">
-                  <span className="text-sm w-8">{star}점</span>
+                  <span className="text-sm w-8 whitespace-nowrap">{star}{t('reviews.points')}</span>
                   <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-amber-400"
@@ -168,11 +229,11 @@ export function ReviewList({ productId }: ReviewListProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-semibold">
-                    {review.user?.name || '익명'}
+                    {review.user?.name || t('reviews.anonymous')}
                   </span>
                   {review.is_verified_purchase && (
                     <span className="px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-400 border border-green-500/30">
-                      구매인증
+                      {t('reviews.verifiedPurchase')}
                     </span>
                   )}
                   <div className="flex items-center gap-1">
@@ -210,11 +271,18 @@ export function ReviewList({ productId }: ReviewListProps) {
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-zinc-400">
-                    {new Date(review.created_at).toLocaleDateString('ko-KR')}
+                    {format.date(review.created_at)}
                   </span>
-                  <button className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-300 transition-colors">
-                    <ThumbsUp className="w-3 h-3" />
-                    도움됨 ({review.helpful_count})
+                  <button
+                    onClick={() => handleLikeReview(review.id, review.helpful_count)}
+                    className={`flex items-center gap-1 text-xs transition-colors ${
+                      likedReviews.has(review.id)
+                        ? 'text-amber-400'
+                        : 'text-zinc-400 hover:text-zinc-300'
+                    }`}
+                  >
+                    <ThumbsUp className={`w-3 h-3 ${likedReviews.has(review.id) ? 'fill-current' : ''}`} />
+                    도움됨 ({review.helpful_count + (likedReviews.has(review.id) ? 1 : 0)})
                   </button>
                 </div>
               </div>

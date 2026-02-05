@@ -3,10 +3,15 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Calendar, MapPin, Filter } from 'lucide-react';
 import { getSpecialtiesByRegion, getAllSpecialties, type Specialty, type Season } from '@/data/region-specialties';
+import { getSpecialtiesByRegion as getCountrySpecialtiesByRegion, getSpecialtiesByCountry, getSpecialtyName, getSpecialtyDescription } from '@/data/country-specialties';
+import type { CountrySpecialty } from '@/types/country';
+import { useI18n } from '@/store/i18n';
+import type { CountryCode } from '@/types/country';
 import { cn } from '@/lib/utils';
 
 interface RegionSpecialtyListViewProps {
-  regionId?: string; // 선택적으로 변경
+  regionId?: string;
+  countryCode?: CountryCode;
 }
 
 const seasonColors: Record<Season, string> = {
@@ -28,34 +33,75 @@ const categoryIcons: Record<Specialty['category'], string> = {
   기타: '🌿',
 };
 
-export function RegionSpecialtyListView({ regionId }: RegionSpecialtyListViewProps) {
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+export function RegionSpecialtyListView({ regionId, countryCode = 'KR' }: RegionSpecialtyListViewProps) {
+  const { locale } = useI18n();
+  const [specialties, setSpecialties] = useState<(Specialty | CountrySpecialty)[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<Season | '전체'>('전체');
   const [selectedCategory, setSelectedCategory] = useState<Specialty['category'] | '전체'>('전체');
   const [isLoading, setIsLoading] = useState(true);
+  const [useCountryData, setUseCountryData] = useState(countryCode !== 'KR');
 
   useEffect(() => {
     setIsLoading(true);
-    // regionId가 없으면 전체 특산물, 있으면 해당 지역 특산물
-    const allSpecialties = regionId 
-      ? getSpecialtiesByRegion(regionId)
-      : getAllSpecialties();
+    
+    let allSpecialties: (Specialty | CountrySpecialty)[] = [];
+    
+    if (useCountryData && countryCode !== 'KR') {
+      // 국가별 특산물 데이터 사용
+      allSpecialties = regionId 
+        ? getCountrySpecialtiesByRegion(regionId, countryCode)
+        : getSpecialtiesByCountry(countryCode);
+    } else {
+      // 기존 한국 특산물 데이터 사용
+      allSpecialties = regionId 
+        ? getSpecialtiesByRegion(regionId)
+        : getAllSpecialties();
+    }
     
     let filtered = allSpecialties;
     
     if (selectedSeason !== '전체') {
-      filtered = filtered.filter(
-        (s) => s.seasons.includes(selectedSeason) || s.seasons.includes('연중')
-      );
+      filtered = filtered.filter((s) => {
+        if ('seasonsLocalized' in s) {
+          // CountrySpecialty
+          const seasons = s.seasonsLocalized[locale] || s.seasons;
+          return seasons.includes(selectedSeason) || seasons.includes('연중');
+        } else {
+          // Specialty
+          return s.seasons.includes(selectedSeason) || s.seasons.includes('연중');
+        }
+      });
     }
     
     if (selectedCategory !== '전체') {
-      filtered = filtered.filter((s) => s.category === selectedCategory);
+      filtered = filtered.filter((s) => {
+        if ('categoryLocalized' in s) {
+          // CountrySpecialty - 카테고리 매핑 필요
+          const categoryMap: Record<string, Specialty['category']> = {
+            fruit: '과일',
+            vegetable: '채소',
+            seafood: '수산물',
+            livestock: '축산물',
+            processed: '가공식품',
+            grain: '곡물',
+            mushroom: '버섯',
+            other: '기타',
+          };
+          return categoryMap[s.category] === selectedCategory;
+        } else {
+          // Specialty
+          return s.category === selectedCategory;
+        }
+      });
     }
     
     setSpecialties(filtered);
     setIsLoading(false);
-  }, [regionId, selectedSeason, selectedCategory]);
+  }, [regionId, selectedSeason, selectedCategory, countryCode, locale, useCountryData]);
+
+  useEffect(() => {
+    setUseCountryData(countryCode !== 'KR');
+  }, [countryCode]);
 
   const allSeasons: (Season | '전체')[] = ['전체', '봄', '여름', '가을', '겨울', '연중'];
   const allCategories: (Specialty['category'] | '전체')[] = [
@@ -158,7 +204,15 @@ export function RegionSpecialtyListView({ regionId }: RegionSpecialtyListViewPro
             <div className="flex items-start gap-3 sm:gap-4">
               {/* 아이콘 */}
               <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30 flex items-center justify-center text-2xl sm:text-3xl">
-                {categoryIcons[specialty.category]}
+                {'categoryLocalized' in specialty 
+                  ? categoryIcons[specialty.category === 'fruit' ? '과일' : 
+                                   specialty.category === 'vegetable' ? '채소' :
+                                   specialty.category === 'seafood' ? '수산물' :
+                                   specialty.category === 'livestock' ? '축산물' :
+                                   specialty.category === 'processed' ? '가공식품' :
+                                   specialty.category === 'grain' ? '곡물' :
+                                   specialty.category === 'mushroom' ? '버섯' : '기타']
+                  : categoryIcons[specialty.category]}
               </div>
 
               {/* 내용 */}
@@ -166,7 +220,7 @@ export function RegionSpecialtyListView({ regionId }: RegionSpecialtyListViewPro
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2">
                     <h4 className="text-base sm:text-lg font-bold">
-                      {specialty.name}
+                      {'nameLocalized' in specialty ? getSpecialtyName(specialty, locale) : specialty.name}
                     </h4>
                     {specialty.isLandmark && (
                       <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/30 to-amber-700/30 border border-amber-500/50">
@@ -178,7 +232,7 @@ export function RegionSpecialtyListView({ regionId }: RegionSpecialtyListViewPro
                 </div>
 
                 {/* 세부 지역 */}
-                {specialty.subRegion && (
+                {'subRegion' in specialty && specialty.subRegion && (
                   <div className="flex items-center gap-1 text-xs sm:text-sm text-zinc-400 mb-1.5">
                     <MapPin className="w-3 h-3 flex-shrink-0" />
                     <span>{specialty.subRegion}</span>
@@ -186,27 +240,34 @@ export function RegionSpecialtyListView({ regionId }: RegionSpecialtyListViewPro
                 )}
 
                 {/* 설명 */}
-                {specialty.description && (
+                {('description' in specialty && specialty.description) && (
                   <p className="text-xs sm:text-sm text-zinc-400 mb-2 line-clamp-1">
-                    {specialty.description}
+                    {'descriptionLocalized' in specialty 
+                      ? (getSpecialtyDescription(specialty, locale) || specialty.description)
+                      : specialty.description}
                   </p>
                 )}
 
                 {/* 계절 태그 */}
                 <div className="flex flex-wrap gap-1.5">
-                  {specialty.seasons.map((season) => (
+                  {('seasonsLocalized' in specialty 
+                    ? (specialty.seasonsLocalized[locale] || specialty.seasons)
+                    : specialty.seasons
+                  ).map((season) => (
                     <span
                       key={season}
                       className={cn(
                         'px-2 py-0.5 rounded text-xs font-medium border',
-                        seasonColors[season]
+                        seasonColors[season as Season] || seasonColors['연중']
                       )}
                     >
                       {season}
                     </span>
                   ))}
                   <span className="px-2 py-0.5 rounded text-xs font-medium bg-zinc-700/30 text-zinc-400 border border-zinc-700/50">
-                    {specialty.category}
+                    {'categoryLocalized' in specialty 
+                      ? specialty.categoryLocalized[locale]
+                      : specialty.category}
                   </span>
                 </div>
               </div>

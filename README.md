@@ -23,6 +23,12 @@ cp .env.example .env.local
 
 # 개발 서버 실행
 npm run dev
+
+# 채팅 서버 실행 (별도 터미널)
+npm run dev:chat
+
+# 스트리밍 서버 실행 (별도 터미널, 선택사항)
+npm run dev:streaming
 ```
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인하세요.
@@ -41,6 +47,8 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # 선택사항
 CRON_SECRET=your_cron_secret
+ENCRYPTION_KEY=your-secure-encryption-key-change-this-in-production
+NEXT_PUBLIC_CHAT_SERVER_URL=http://localhost:3001
 ```
 
 ## 🗄️ 데이터베이스 설정
@@ -54,9 +62,22 @@ CRON_SECRET=your_cron_secret
 
 Supabase SQL Editor에서 다음 순서로 실행:
 
-1. **스키마 생성**: `supabase/schema.sql` 파일의 내용 실행
-2. **RLS 정책 설정**: `supabase/rls.sql` 파일의 내용 실행
-3. **초기 데이터 삽입** (선택사항): `supabase/seed.sql` 파일의 내용 실행
+1. **기본 스키마 생성**: `supabase/schema.sql` 파일의 내용 실행
+2. **마이그레이션 파일 실행**:
+   - `supabase/migrations/add-product-details.sql`
+   - `supabase/migrations/add-reviews.sql`
+   - `supabase/migrations/add-promotions.sql`
+   - `supabase/migrations/add-refunds.sql`
+   - `supabase/migrations/add-coin-system.sql`
+   - `supabase/migrations/add-admin-role.sql`
+   - `supabase/migrations/add-chat-system.sql`
+   - `supabase/migrations/add-notifications.sql`
+   - `supabase/migrations/add-search-history.sql`
+   - `supabase/migrations/add-live-stream-features.sql`
+   - `supabase/migrations/add-user-bj-mapping.sql`
+3. **RLS 정책 설정**: `supabase/rls.sql` 파일의 내용 실행
+4. **RLS 정책 추가**: `supabase/migrations/add-rls-policies.sql` 파일의 내용 실행
+5. **초기 데이터 삽입** (선택사항): `supabase/seed.sql` 파일의 내용 실행
 
 또는 Supabase CLI 사용:
 
@@ -88,6 +109,16 @@ supabase db push
 - `orders` - 주문 정보
 - `order_items` - 주문 상품
 - `user_profiles` - 사용자 프로필 확장
+- `chat_messages` - 채팅 메시지
+- `chat_banned_users` - 채팅 차단 사용자
+- `notifications` - 알림
+- `search_history` - 검색 기록
+- `popular_searches` - 인기 검색어
+- `user_coins` - 코인 잔액
+- `coin_transactions` - 코인 거래 내역
+- `product_reviews` - 상품 리뷰
+- `coupons` - 쿠폰
+- `order_refunds` - 환불
 
 ## 🔐 인증 설정
 
@@ -130,13 +161,40 @@ supabase db push
   - Facebook 소셜 로그인
   - 카카오 소셜 로그인
   - 사용자 프로필 관리
+- ✅ **다국어 지원 (6개 언어)**
+  - 한국어, 영어, 일본어, 중국어, 베트남어, 태국어
+  - 로케일별 통화/날짜/시간 포맷팅
+  - 국가별 지역 및 특산물 다국어화
+- ✅ **보안 시스템**
+  - 코드 난독화 (프로덕션 빌드)
+  - 암호화 유틸리티 (AES, SHA-256)
+  - Rate Limiting (API 요청 제한)
+  - SQL Injection 방지
+  - XSS 공격 방지
+  - 보안 헤더 설정 (CSP, XSS Protection 등)
+  - JWT 토큰 보안 강화
+  - 역할 기반 접근 제어 (RBAC)
+- ✅ **UI/UX 개선**
+  - 스켈레톤 UI (로딩 상태)
+  - Toast 알림 시스템
+  - 확인 다이얼로그 컴포넌트
+  - 빈 상태(Empty State) UI
+  - 로딩 버튼 컴포넌트
+  - 접근성 개선 (키보드 네비게이션, 포커스 상태)
 - ✅ 실시간 라이브 방송 통합 (YouTube)
 - ✅ 크리에이터 랭킹 시스템
 - ✅ 통합 플레이어 (YouTube + 자체 플랫폼)
-- ✅ 라이브 채팅
+- ✅ **라이브 채팅 시스템**
+  - 실시간 메시지 전송
+  - 크리에이터 채팅 관리 (메시지 삭제, 사용자 차단)
+  - 구매 알림 채팅
 - ✅ 관리자 백오피스
 - ✅ 광고 관리 시스템
 - ✅ **전국 특산물 지도** (지역별 특산물 및 방송 연동)
+- ✅ **실시간 상품 팝업** (라이브 방송 중 상품 소개)
+- ✅ **알림 시스템** (Toast 알림, 알림 센터)
+- ✅ **전역 검색** (상품/크리에이터/지역 통합 검색)
+- ✅ **다크 모드** 지원
 - ✅ 30초 자동 갱신
 - ✅ 완벽한 모바일 반응형
 
@@ -192,8 +250,48 @@ supabase/
 - `GET /api/live-list` - 라이브 방송 목록
 - `GET /api/live-ranking` - 랭킹 조회
 - `GET /api/region-streams` - 지역별 방송 조회
+- `GET /api/streaming/[streamId]/featured-product` - 소개 상품 조회
+- `PATCH /api/streaming/[streamId]/featured-product` - 소개 상품 설정
+
+### 채팅 API
+- `POST /api/chat/messages` - 채팅 메시지 저장
+- `GET /api/chat/messages` - 채팅 메시지 히스토리 조회
+- `DELETE /api/chat/messages/[messageId]` - 메시지 삭제 (크리에이터)
+- `POST /api/chat/ban` - 사용자 차단 (크리에이터)
+- `GET /api/chat/ban` - 차단 목록 조회
+- `DELETE /api/chat/ban/[userId]` - 차단 해제
+
+### 알림 API
+- `GET /api/notifications` - 알림 목록 조회
+- `POST /api/notifications` - 알림 생성
+- `PATCH /api/notifications/[id]/read` - 알림 읽음 처리
+- `PATCH /api/notifications/read-all` - 모든 알림 읽음 처리
+- `GET /api/notifications/unread-count` - 읽지 않은 알림 개수
+
+### 검색 API
+- `GET /api/search/history` - 검색 기록 조회
+- `POST /api/search/history` - 검색 기록 저장
+- `DELETE /api/search/history` - 검색 기록 삭제
+- `GET /api/search/popular` - 인기 검색어 조회
+
+### 사용자 API
+- `GET /api/users/[userId]/creator` - 크리에이터 정보 조회
+- `POST /api/users/[userId]/creator` - 크리에이터 등록
 
 ## 🚢 배포
+
+### 빌드
+
+```bash
+# 일반 빌드
+npm run build
+
+# 난독화 빌드 (프로덕션)
+npm run build:obfuscated
+
+# 프로덕션 서버 실행
+npm start
+```
 
 ### Vercel 배포
 
@@ -208,10 +306,24 @@ Vercel Cron을 통해 다음 작업이 자동 실행됩니다:
 - **일일 YouTube 동기화**: 매일 자정 (`/api/sync-youtube`)
 - **점수 계산**: 30분마다 (`/api/calculate-scores`)
 
+### 채팅 서버 배포
+
+채팅 서버는 별도로 배포해야 합니다:
+- Node.js 서버 (포트 3001)
+- Socket.io 기반 실시간 통신
+- 환경 변수: `NEXT_PUBLIC_CHAT_SERVER_URL` 설정 필요
+
 ## 📚 문서
 
-- **[개발 백서 (DEVELOPMENT_BACKEND.md)](./DEVELOPMENT_BACKEND.md)**: 전체 시스템 아키텍처, 데이터베이스 설계, API 문서, 개발 가이드 등 상세한 기술 문서
-- **[개발 가이드 (DEVELOPMENT_GUIDE.md)](./DEVELOPMENT_GUIDE.md)**: 프로젝트 개요 및 빠른 시작 가이드
+- **[기능 정리 (기능_정리.md)](./기능_정리.md)**: 전체 기능 상세 정리
+- **[백엔드 DB 개발 필요사항](./백엔드_DB_개발_필요사항.md)**: 백엔드 API 및 DB 개발 가이드
+- **[보안 구현 가이드](./보안_구현_가이드.md)**: 코드 난독화, 암호화, 보안 미들웨어 등
+- **[UI/UX 개선 내용](./UI_UX_개선_내용.md)**: 로딩 상태, 알림 시스템, 접근성 개선 등
+- **[다국어 지원 구현 내용](./다국어_지원_구현_내용.md)**: 다국어 시스템 상세 구현 내용
+- **[라이브 쇼핑 고도화](./라이브_쇼핑_고도화_구현_내용.md)**: 실시간 상품 팝업, 구매 알림 등
+- **[관리자 대시보드 고도화](./관리자_대시보드_고도화_구현_내용.md)**: 매출 분석, 트래픽 모니터링 등
+- **[UX 개선 구현 내용](./UX_개선_구현_내용.md)**: 알림 시스템, 검색, 에러 처리 등
+- **[데이터 관리 및 보안](./데이터_관리_및_보안_구현_내용.md)**: 장바구니 동기화, 트랜잭션 로그 등
 - **[스트리밍 서버 가이드](./src/lib/streaming/README.md)**: 자체 스트리밍 서버 구축 및 설정 가이드
 - **[채팅 시스템 가이드](./src/lib/chat/README.md)**: 실시간 채팅 시스템 구축 가이드
 

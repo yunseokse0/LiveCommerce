@@ -4,9 +4,11 @@ import { useLiveRanking } from '@/store/live-ranking';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function HeroCarousel() {
   const { liveList, isLoading } = useLiveRanking();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return <Skeleton className="h-64 w-full" />;
@@ -37,11 +39,11 @@ export function HeroCarousel() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-6">
             <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-              <span className="px-2 py-0.5 sm:py-1 bg-red-500 text-white text-[10px] sm:text-xs font-semibold rounded">
-                LIVE
+              <span className="px-2 py-0.5 sm:py-1 bg-red-500 text-white text-[10px] sm:text-xs font-semibold rounded whitespace-nowrap">
+                {t('live.live')}
               </span>
-              <span className="text-xs sm:text-sm text-zinc-300">
-                {featuredLive.viewerCount.toLocaleString()}명 시청
+              <span className="text-xs sm:text-sm text-zinc-300 whitespace-nowrap">
+                {featuredLive.viewerCount.toLocaleString()}{t('live.viewers')} {t('live.watching')}
               </span>
             </div>
             <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white mb-0.5 sm:mb-1 line-clamp-2">

@@ -7,6 +7,7 @@
     "dev:streaming": "node scripts/start-streaming-server.js",
     "dev:chat": "node scripts/start-chat-server.js",
     "build": "next build",
+    "build:obfuscated": "NODE_ENV=production next build --config next.config.obfuscated.js",
     "build:webpack": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
@@ -21,6 +22,7 @@
     "chart.js": "^4.5.1",
     "cheerio": "^1.2.0",
     "clsx": "^2.1.1",
+    "crypto-js": "^4.2.0",
     "fluent-ffmpeg": "^2.1.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",
+    "@types/crypto-js": "^3.1.47",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -46,6 +49,7 @@
     "eslint": "^9.17.0",
     "eslint-config-next": "16.1.3",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.19"
+    "tailwindcss": "^3.4.19",
+    "webpack-obfuscator": "^3.5.1"
   }
 }

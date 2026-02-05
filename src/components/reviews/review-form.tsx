@@ -6,6 +6,7 @@ import { Star, X, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import Image from 'next/image';
 import { saveLocalReview } from '@/data/mock-reviews';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface ReviewFormProps {
   productId: string;
@@ -17,6 +18,7 @@ interface ReviewFormProps {
 
 export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCancel }: ReviewFormProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [title, setTitle] = useState('');
@@ -30,7 +32,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
   if (!user) {
     return (
       <div className="p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm text-center">
-        <p className="text-zinc-400">리뷰를 작성하려면 로그인이 필요합니다.</p>
+        <p className="text-zinc-400">{t('reviews.loginRequired')}</p>
       </div>
     );
   }
@@ -39,7 +41,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
     e.preventDefault();
 
     if (!rating || !content.trim()) {
-      alert('평점과 리뷰 내용을 입력해주세요.');
+      alert(t('reviews.ratingAndContentRequired'));
       return;
     }
 
@@ -159,7 +161,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
   return (
     <form onSubmit={handleSubmit} className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">리뷰 작성</h3>
+        <h3 className="text-lg font-semibold">{t('reviews.submit')}</h3>
         {onCancel && (
           <Button
             type="button"
@@ -174,7 +176,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
 
       {/* 평점 선택 */}
       <div>
-        <label className="block text-sm font-medium mb-2">평점 *</label>
+        <label className="block text-sm font-medium mb-2">{t('reviews.ratingRequired')}</label>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -195,19 +197,19 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
             </button>
           ))}
           {rating > 0 && (
-            <span className="ml-2 text-sm text-zinc-400">{rating}점</span>
+            <span className="ml-2 text-sm text-zinc-400 whitespace-nowrap">{rating}{t('reviews.points')}</span>
           )}
         </div>
       </div>
 
       {/* 리뷰 제목 */}
       <div>
-        <label className="block text-sm font-medium mb-2">제목 (선택사항)</label>
+        <label className="block text-sm font-medium mb-2">{t('reviews.titleOptional')}</label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="리뷰 제목을 입력하세요"
+          placeholder={t('reviews.titlePlaceholder')}
           maxLength={100}
           className="w-full px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50"
         />
@@ -215,11 +217,11 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
 
       {/* 리뷰 내용 */}
       <div>
-        <label className="block text-sm font-medium mb-2">리뷰 내용 *</label>
+        <label className="block text-sm font-medium mb-2">{t('reviews.contentRequired')}</label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="리뷰를 작성해주세요"
+          placeholder={t('reviews.contentPlaceholder')}
           rows={6}
           required
           maxLength={1000}
@@ -230,7 +232,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
 
       {/* 이미지 추가 */}
       <div>
-        <label className="block text-sm font-medium mb-2">이미지 (선택사항)</label>
+        <label className="block text-sm font-medium mb-2">{t('reviews.imageOptional')}</label>
         
         {/* 파일 업로드 */}
         <div className="mb-2">
@@ -248,7 +250,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-zinc-800/80 hover:border-amber-500/50 cursor-pointer transition-colors"
           >
             <Upload className="w-4 h-4" />
-            <span className="text-sm">이미지 업로드</span>
+            <span className="text-sm whitespace-nowrap">{t('reviews.uploadImage')}</span>
           </label>
         </div>
 
@@ -258,7 +260,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
             type="url"
             value={imageInput}
             onChange={(e) => setImageInput(e.target.value)}
-            placeholder="또는 이미지 URL 입력"
+            placeholder={t('reviews.imageUrlPlaceholder')}
             className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 text-sm"
           />
           <Button
@@ -267,8 +269,9 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
             variant="outline"
             size="sm"
             disabled={!imageInput.trim()}
+            className="whitespace-nowrap"
           >
-            추가
+            {t('common.add')}
           </Button>
         </div>
 
@@ -276,7 +279,7 @@ export function ReviewForm({ productId, orderItemId, orderId, onSuccess, onCance
         {uploadingImages.length > 0 && (
           <div className="mb-2 flex items-center gap-2 text-sm text-zinc-400">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>이미지 업로드 중... ({uploadingImages.length})</span>
+            <span className="whitespace-nowrap">{t('reviews.uploadingImages')} ({uploadingImages.length})</span>
           </div>
         )}
 

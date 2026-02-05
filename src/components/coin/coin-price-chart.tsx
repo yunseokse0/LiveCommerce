@@ -3,12 +3,16 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { CoinPrice } from '@/types/coin';
+import { useFormat } from '@/hooks/use-format';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface CoinPriceChartProps {
   className?: string;
 }
 
 export function CoinPriceChart({ className }: CoinPriceChartProps) {
+  const format = useFormat();
+  const { t } = useTranslation();
   const [currentPrice, setCurrentPrice] = useState<CoinPrice | null>(null);
   const [priceHistory, setPriceHistory] = useState<CoinPrice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,7 +85,7 @@ export function CoinPriceChart({ className }: CoinPriceChartProps) {
               <span className="text-sm text-zinc-400">원</span>
             </div>
             <div className="text-xs text-zinc-500">
-              1코인 기준
+              {t('coins.perCoin')}
             </div>
           </div>
 
@@ -121,10 +125,10 @@ export function CoinPriceChart({ className }: CoinPriceChartProps) {
                     className="flex items-center justify-between text-sm"
                   >
                     <span className="text-zinc-400">
-                      {new Date(price.effectiveFrom).toLocaleDateString('ko-KR')}
+                      {format.date(price.effectiveFrom)}
                     </span>
                     <span className="font-semibold text-amber-400">
-                      {price.price.toLocaleString()}원
+                      {format.currency(price.price)}
                     </span>
                   </div>
                 ))}

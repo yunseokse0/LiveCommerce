@@ -37,10 +37,8 @@ export async function initializeTossPayments() {
 
   try {
     // 동적 import로 클라이언트 사이드에서만 로드
-    const { loadPaymentWidget } = await import('@tosspayments/payment-sdk');
-    return await loadPaymentWidget(TOSS_PAYMENTS_CLIENT_KEY, {
-      customerKey: 'customer-key', // 실제로는 사용자 ID 사용
-    });
+    const { loadTossPayments } = await import('@tosspayments/payment-sdk');
+    return await loadTossPayments(TOSS_PAYMENTS_CLIENT_KEY);
   } catch (error) {
     console.error('토스페이먼츠 초기화 오류:', error);
     return null;

@@ -17,6 +17,7 @@ interface ChatMessage {
 interface UseChatOptions {
   streamId: string;
   autoConnect?: boolean;
+  creatorId?: string; // 크리에이터 ID (권한 확인용)
 }
 
 // MOCK 모드: Socket.io 서버 없이도 작동
@@ -41,7 +42,7 @@ function createMockMessage(streamId: string, userId: string, nickname: string, m
 /**
  * 실시간 채팅 훅 (MOCK 모드 지원)
  */
-export function useChat({ streamId, autoConnect = true }: UseChatOptions) {
+export function useChat({ streamId, autoConnect = true, creatorId }: UseChatOptions) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -74,7 +75,7 @@ export function useChat({ streamId, autoConnect = true }: UseChatOptions) {
         }
       };
     }
-  }, [streamId, user?.id, autoConnect]);
+  }, [streamId, user?.id, autoConnect, creatorId]);
 
   // 실제 Socket.io 연결
   useEffect(() => {
@@ -133,6 +134,33 @@ export function useChat({ streamId, autoConnect = true }: UseChatOptions) {
         mockMessageStore.set(streamId, newMessages);
         return newMessages;
       });
+    });
+
+    // 메시지 삭제 알림 수신
+    socket.on('message-deleted', (data: { messageId: string; streamId: string }) => {
+      setMessages((prev) => {
+        const updated = prev.map((msg) =>
+          msg.id === data.messageId ? { ...msg, message: '[삭제된 메시지]' } : msg
+        );
+        mockMessageStore.set(streamId, updated);
+        return updated;
+      });
+    });
+
+    // 사용자 차단 알림 수신
+    socket.on('user-banned', (data: { userId: string; streamId: string }) => {
+      // 차단된 사용자의 메시지 제거 또는 표시
+      setMessages((prev) => {
+        const updated = prev.filter((msg) => msg.userId !== data.userId);
+        mockMessageStore.set(streamId, updated);
+        return updated;
+      });
+    });
+
+    // 자신이 차단되었을 때
+    socket.on('banned', () => {
+      setIsConnected(false);
+      setMessages([]);
     });
 
     // 정리 함수
@@ -216,10 +244,109 @@ export function useChat({ streamId, autoConnect = true }: UseChatOptions) {
     }
   };
 
+  // 메시지 삭제 함수 (크리에이터만 사용 가능)
+  const deleteMessage = (messageId: string) => {
+    if (!user || !creatorId || user.id !== creatorId) {
+      return false;
+    }
+
+    // MOCK 모드
+    if (USE_MOCK_MODE || !socketRef.current || !socketRef.current.connected) {
+      setMessages((prev) => {
+        const updated = prev.map((msg) =>
+          msg.id === messageId ? { ...msg, message: '[삭제된 메시지]' } : msg
+        );
+        mockMessageStore.set(streamId, updated);
+        return updated;
+      });
+      return true;
+    }
+
+    // 실제 Socket.io 전송
+    const socket = socketRef.current || getSocketInstance();
+    if (!socket || !socket.connected) {
+      return false;
+    }
+
+    socket.emit('delete-message', {
+      streamId,
+      messageId,
+    });
+
+    return true;
+  };
+
+  // 사용자 차단 함수 (크리에이터만 사용 가능)
+  const banUser = (userId: string) => {
+    if (!user || !creatorId || user.id !== creatorId) {
+      return false;
+    }
+
+    // MOCK 모드
+    if (USE_MOCK_MODE || !socketRef.current || !socketRef.current.connected) {
+      setMessages((prev) => {
+        const updated = prev.filter((msg) => msg.userId !== userId);
+        mockMessageStore.set(streamId, updated);
+        return updated;
+      });
+      return true;
+    }
+
+    // 실제 Socket.io 전송
+    const socket = socketRef.current || getSocketInstance();
+    if (!socket || !socket.connected) {
+      return false;
+    }
+
+    socket.emit('ban-user', {
+      streamId,
+      userId,
+    });
+
+    return true;
+  };
+
+  // 구매 알림 추가 함수
+  const addPurchaseNotification = (buyerName: string, productName?: string) => {
+    const notificationMessage = productName
+      ? `${buyerName}님이 "${productName}"을(를) 방금 구매하셨습니다! 🛒`
+      : `${buyerName}님이 방금 구매하셨습니다! 🛒`;
+
+    const purchaseMessage = createMockMessage(
+      streamId,
+      'system',
+      '시스템',
+      notificationMessage
+    );
+
+    setMessages((prev) => {
+      const newMessages = [...prev, purchaseMessage];
+      const limitedMessages = newMessages.slice(-100);
+      mockMessageStore.set(streamId, limitedMessages);
+      return limitedMessages;
+    });
+
+    // Socket.io로도 전송 (실제 서버가 있는 경우)
+    if (!USE_MOCK_MODE && socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit('purchase-notification', {
+        streamId,
+        buyerName,
+        productName,
+      });
+    }
+  };
+
+  // 크리에이터 여부 확인
+  const isCreator = user && creatorId ? user.id === creatorId : false;
+
   return {
     messages,
     isConnected: USE_MOCK_MODE ? true : isConnected,
     sendMessage,
     disconnect,
+    addPurchaseNotification,
+    deleteMessage,
+    banUser,
+    isCreator,
   };
 }

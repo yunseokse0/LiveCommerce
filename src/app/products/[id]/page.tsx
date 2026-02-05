@@ -4,19 +4,29 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/ui/loading-button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ShoppingCart, ArrowLeft, Package, Tag } from 'lucide-react';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { mockProducts } from '@/data/mock-products';
 import { useCart } from '@/store/cart';
 import { ReviewList } from '@/components/reviews/review-list';
+import { useFormat } from '@/hooks/use-format';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function ProductDetailPage() {
+  const format = useFormat();
+  const { t } = useTranslation();
+  const toast = useToast();
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
 
@@ -59,10 +69,17 @@ export default function ProductDetailPage() {
       });
   }, [productId]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
-    addItem(product, quantity);
-    alert('장바구니에 추가되었습니다.');
+    setIsAddingToCart(true);
+    try {
+      addItem(product, quantity);
+      toast.success(t('cart.addedToCart'), t('cart.addedToCartDesc'));
+    } catch (error) {
+      toast.error(t('common.error'), t('cart.addToCartFailed'));
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleBuyNow = () => {
@@ -75,8 +92,18 @@ export default function ProductDetailPage() {
       <>
         <Header />
         <main className="min-h-screen bg-background">
-          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-            <div className="text-center py-12 text-zinc-400">로딩 중...</div>
+          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-6xl">
+            <Skeleton className="h-10 w-32 mb-6" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+              <Skeleton className="aspect-square rounded-2xl" />
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            </div>
           </div>
         </main>
       </>
@@ -89,12 +116,15 @@ export default function ProductDetailPage() {
         <Header />
         <main className="min-h-screen bg-background">
           <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-            <div className="text-center py-12">
-              <p className="text-zinc-400 mb-4">제품을 찾을 수 없습니다.</p>
-              <Button onClick={() => router.push('/')} variant="outline">
-                홈으로 돌아가기
-              </Button>
-            </div>
+            <EmptyState
+              icon={Package}
+              title={t('product.notFound')}
+              description={t('product.notFoundDesc')}
+              action={{
+                label: t('common.backToHome'),
+                onClick: () => router.push('/'),
+              }}
+            />
           </div>
         </main>
       </>
@@ -177,9 +207,8 @@ export default function ProductDetailPage() {
               <div className="py-4 border-y border-zinc-800/80">
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-bold text-amber-400">
-                    {product.price.toLocaleString()}
+                    {format.currency(product.price)}
                   </span>
-                  <span className="text-lg text-zinc-400">원</span>
                 </div>
                 {product.stock > 0 ? (
                   <p className="text-sm text-zinc-400 mt-2">재고: {product.stock}개</p>
@@ -255,21 +284,23 @@ export default function ProductDetailPage() {
 
               {/* 구매 버튼 */}
               <div className="flex gap-3 pt-4">
-                <Button
+                <LoadingButton
                   onClick={handleAddToCart}
                   variant="outline"
                   className="flex-1"
-                  disabled={product.stock === 0}
+                  disabled={product.stock === 0 || isAddingToCart}
+                  loading={isAddingToCart}
+                  loadingText={t('cart.adding')}
                 >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  장바구니
-                </Button>
+                  {t('cart.addToCart')}
+                </LoadingButton>
                 <Button
                   onClick={handleBuyNow}
                   className="flex-1"
                   disabled={product.stock === 0}
                 >
-                  바로 구매
+                  {t('product.buyNow')}
                 </Button>
               </div>
             </div>

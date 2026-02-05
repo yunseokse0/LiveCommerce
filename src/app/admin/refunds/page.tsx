@@ -5,6 +5,7 @@ import { Header } from '@/components/header';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { maskAccountNumber, maskPhoneNumber } from '@/lib/data-masking';
 
 interface Refund {
   id: string;
@@ -202,7 +203,6 @@ export default function AdminRefundsPage() {
 
   return (
     <ProtectedRoute requireAuth={false} requireAdmin={false}>
-      <Header />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-7xl">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
@@ -272,7 +272,7 @@ export default function AdminRefundsPage() {
                     {refund.refund_account && (
                       <div>
                         <p className="text-sm font-medium text-zinc-400">환불 계좌:</p>
-                        <p className="text-sm">{refund.refund_account}</p>
+                        <p className="text-sm">{maskAccountNumber(refund.refund_account)}</p>
                       </div>
                     )}
                     {refund.admin_note && (

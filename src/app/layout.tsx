@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { NotificationProvider } from '@/components/providers/notification-provider';
+import { CartSyncProvider } from '@/components/providers/cart-sync-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,7 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <NotificationProvider />
+        <CartSyncProvider />
+      </body>
     </html>
   );
 }

@@ -7,11 +7,13 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'md', ...props }, ref) => {
+  ({ className, variant = 'default', size = 'md', disabled, ...props }, ref) => {
     return (
       <button
         className={cn(
           'inline-flex items-center justify-center rounded-lg sm:rounded-xl font-medium transition-all duration-300 touch-manipulation active:scale-95',
+          'focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 focus:ring-offset-background',
+          'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
           {
             'bg-primary text-background hover:bg-primary/90 active:bg-primary/80': variant === 'default',
             'border border-zinc-800/80 bg-card hover:border-amber-500/50 active:border-amber-500/70': variant === 'outline',
@@ -23,6 +25,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           className
         )}
         ref={ref}
+        disabled={disabled}
         {...props}
       />
     );

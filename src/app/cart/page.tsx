@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useCart } from '@/store/cart';
 import { useAuth } from '@/store/auth';
 import { PaymentButton } from '@/components/payment/payment-button';
@@ -19,12 +20,18 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/use-translation';
+import { useFormat } from '@/hooks/use-format';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CartPage() {
+  const { t } = useTranslation();
+  const format = useFormat();
+  const toast = useToast();
   const router = useRouter();
   const { user } = useAuth();
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCart();
-  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [appliedPromotions, setAppliedPromotions] = useState<{
     bogo?: string[];
     freeGifts?: string[];
@@ -42,12 +49,12 @@ export default function CartPage() {
     }
 
     if (items.length === 0) {
-      alert('장바구니가 비어있습니다.');
+      toast.warning(t('cart.empty'), t('cart.emptyDesc'));
       return;
     }
 
     if (!shippingAddress.trim()) {
-      alert('배송지를 입력해주세요.');
+      toast.warning(t('cart.shippingAddress'), t('cart.shippingAddressPlaceholder'));
       return;
     }
   };
@@ -58,14 +65,15 @@ export default function CartPage() {
         <Header />
         <main className="min-h-screen bg-background">
           <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-6xl">
-            <div className="text-center py-16">
-              <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-zinc-600" />
-              <h2 className="text-2xl font-bold mb-2">장바구니가 비어있습니다</h2>
-              <p className="text-zinc-400 mb-6">상품을 추가해보세요!</p>
-              <Button onClick={() => router.push('/')}>
-                쇼핑하러 가기
-              </Button>
-            </div>
+            <EmptyState
+              icon={ShoppingCart}
+              title={t('cart.empty')}
+              description={t('cart.emptyDesc')}
+              action={{
+                label: t('cart.goShopping'),
+                onClick: () => router.push('/'),
+              }}
+            />
           </div>
         </main>
       </>
@@ -84,10 +92,10 @@ export default function CartPage() {
               size="sm"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              뒤로가기
+              {t('common.back')}
             </Button>
-            <h1 className="text-2xl sm:text-3xl font-bold">장바구니</h1>
-            <span className="text-sm text-zinc-400">({totalItems}개 상품)</span>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t('cart.title')}</h1>
+            <span className="text-sm text-zinc-400">({totalItems} {t('cart.items')})</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -150,16 +158,16 @@ export default function CartPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-bold text-amber-400">
-                            {(item.product.price * item.quantity).toLocaleString()}원
+                            {format.currency(item.product.price * item.quantity)}
                           </p>
                           <p className="text-xs text-zinc-400">
-                            {item.product.price.toLocaleString()}원 × {item.quantity}
+                            {format.currency(item.product.price)} × {item.quantity}
                           </p>
                         </div>
                       </div>
                       {item.product.stock < item.quantity && (
                         <p className="text-xs text-red-400 mt-2">
-                          재고 부족 (재고: {item.product.stock}개)
+                          {t('cart.outOfStock')} ({t('cart.stock')}: {item.product.stock})
                         </p>
                       )}
                     </div>
@@ -184,7 +192,7 @@ export default function CartPage() {
                   size="sm"
                   className="text-red-400 hover:text-red-300"
                 >
-                  전체 삭제
+                  {t('cart.removeAll')}
                 </Button>
               </div>
             </div>
@@ -196,11 +204,11 @@ export default function CartPage() {
 
                 {/* 배송지 입력 */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">배송지</label>
+                  <label className="block text-sm font-medium mb-2">{t('cart.shippingAddress')}</label>
                   <textarea
                     value={shippingAddress}
                     onChange={(e) => setShippingAddress(e.target.value)}
-                    placeholder="배송지를 입력하세요"
+                    placeholder={t('cart.shippingAddressPlaceholder')}
                     rows={3}
                     className="w-full px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 resize-none text-sm"
                   />
@@ -208,38 +216,39 @@ export default function CartPage() {
 
                 {/* 쿠폰 입력 */}
                 <CouponInput
-                  value={couponCode}
-                  onChange={setCouponCode}
-                  totalAmount={totalPrice}
+                  onApply={(validation) => setAppliedCoupon(validation)}
+                  onRemove={() => setAppliedCoupon(null)}
+                  appliedCoupon={appliedCoupon}
+                  purchaseAmount={totalPrice}
+                  productIds={items.map(item => item.product.id)}
                 />
 
                 {/* 코인 결제 옵션 */}
                 {user && (
                   <CoinPaymentOption
-                    totalAmount={totalPrice}
-                    coinPaymentAmount={coinPaymentAmount}
-                    onCoinPaymentChange={setCoinPaymentAmount}
+                    finalAmount={totalPrice}
+                    onCoinAmountChange={setCoinPaymentAmount}
                   />
                 )}
 
                 {/* 금액 요약 */}
                 <div className="space-y-2 pt-4 border-t border-zinc-800/80">
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">상품 금액</span>
-                    <span>{totalPrice.toLocaleString()}원</span>
+                    <span className="text-zinc-400">{t('cart.productPrice')}</span>
+                    <span>{format.currency(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">할인 금액</span>
-                    <span className="text-red-400">-0원</span>
+                    <span className="text-zinc-400">{t('cart.discount')}</span>
+                    <span className="text-red-400">-{format.currency(0)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">코인 결제</span>
-                    <span className="text-amber-400">-{coinPaymentAmount.toLocaleString()}원</span>
+                    <span className="text-zinc-400">{t('cart.coinPayment')}</span>
+                    <span className="text-amber-400">-{format.currency(coinPaymentAmount)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-2 border-t border-zinc-800/80">
-                    <span>최종 결제 금액</span>
+                    <span>{t('cart.total')}</span>
                     <span className="text-amber-400">
-                      {Math.max(0, totalPrice - coinPaymentAmount).toLocaleString()}원
+                      {format.currency(Math.max(0, totalPrice - coinPaymentAmount))}
                     </span>
                   </div>
                 </div>
@@ -249,7 +258,7 @@ export default function CartPage() {
                   <PaymentButton
                     items={items}
                     shippingAddress={shippingAddress}
-                    couponCode={couponCode || undefined}
+                    couponCode={appliedCoupon?.code || undefined}
                     appliedPromotions={appliedPromotions}
                     useTossPayments={!!process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY}
                     onSuccess={() => {
@@ -265,7 +274,7 @@ export default function CartPage() {
                     onClick={() => router.push('/auth/login?redirect=/cart')}
                     className="w-full"
                   >
-                    로그인 후 주문하기
+                    {t('cart.loginToCheckout')}
                   </Button>
                 )}
               </div>

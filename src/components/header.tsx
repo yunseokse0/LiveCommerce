@@ -5,13 +5,19 @@ import Link from 'next/link';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/auth/user-menu';
+import { NotificationCenter } from '@/components/notifications/notification-center';
+import { GlobalSearch } from '@/components/search/global-search';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSelector } from '@/components/language-selector';
 import { useAuth } from '@/store/auth';
 import { useCart } from '@/store/cart';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { initialize } = useAuth();
   const { getTotalItems } = useCart();
+  const { t } = useTranslation();
   const cartItemCount = getTotalItems();
 
   useEffect(() => {
@@ -26,28 +32,30 @@ export function Header() {
             Live Commerce
           </Link>
           
+          {/* 검색 바 (데스크톱) */}
+          <div className="hidden md:block flex-1 max-w-md mx-4">
+            <GlobalSearch />
+          </div>
+          
           {/* 데스크톱 네비게이션 */}
-          <nav className="hidden md:flex items-center gap-4">
-            <Link href="/live" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              라이브
+          <nav className="hidden md:flex items-center gap-2 lg:gap-4 flex-wrap">
+            <Link href="/live" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
+              {t('common.live')}
             </Link>
-            <Link href="/ranking" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              랭킹
+            <Link href="/ranking" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
+              {t('common.ranking')}
             </Link>
-            <Link href="/map" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              지도
+            <Link href="/map" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
+              {t('common.map')}
             </Link>
-            <Link href="/studio" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              스튜디오
+            <Link href="/studio" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
+              {t('common.studio')}
             </Link>
-            <Link href="/orders" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              주문내역
+            <Link href="/orders" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
+              {t('common.orders')}
             </Link>
-            <Link href="/coins" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              코인
-            </Link>
-            <Link href="/admin" className="text-sm hover:text-primary transition-colors px-2 py-1">
-              관리자
+            <Link href="/coins" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
+              {t('common.coins')}
             </Link>
             <Link href="/cart" className="relative p-2 hover:text-primary transition-colors">
               <ShoppingCart className="w-5 h-5" />
@@ -57,6 +65,9 @@ export function Header() {
                 </span>
               )}
             </Link>
+            <LanguageSelector />
+            <NotificationCenter />
+            <ThemeToggle />
             <UserMenu />
           </nav>
 
@@ -64,7 +75,7 @@ export function Header() {
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 -mr-2"
-            aria-label="메뉴 열기"
+            aria-label={t('common.menu')}
           >
             {isMenuOpen ? (
               <X className="w-6 h-6" />
@@ -77,54 +88,51 @@ export function Header() {
         {/* 모바일 메뉴 */}
         {isMenuOpen && (
           <nav className="md:hidden border-t border-zinc-800/80 py-4 space-y-2">
+            {/* 모바일 검색 */}
+            <div className="px-4 mb-2">
+              <GlobalSearch />
+            </div>
             <Link
               href="/live"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
-              라이브
+              {t('common.live')}
             </Link>
             <Link
               href="/ranking"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
-              랭킹
+              {t('common.ranking')}
             </Link>
             <Link
               href="/map"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
-              지도
+              {t('common.map')}
             </Link>
             <Link
               href="/studio"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
-              스튜디오
+              {t('common.studio')}
             </Link>
             <Link
               href="/orders"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
-              주문내역
+              {t('common.orders')}
             </Link>
             <Link
               href="/coins"
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
-              코인
-            </Link>
-            <Link
-              href="/admin"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
-            >
-              관리자
+              {t('common.coins')}
             </Link>
             <Link
               href="/cart"
@@ -132,13 +140,16 @@ export function Header() {
               className="flex items-center gap-2 px-4 py-3 hover:bg-secondary rounded-lg transition-colors"
             >
               <ShoppingCart className="w-5 h-5" />
-              장바구니
+              {t('common.cart')}
               {cartItemCount > 0 && (
                 <span className="ml-auto px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs font-bold">
                   {cartItemCount}
                 </span>
               )}
             </Link>
+            <div className="px-4 py-3 border-t border-zinc-800/80">
+              <LanguageSelector />
+            </div>
             <div className="px-4 py-3 border-t border-zinc-800/80 mt-2">
               <UserMenu />
             </div>

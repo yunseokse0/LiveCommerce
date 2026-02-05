@@ -9,12 +9,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { userId, reason, refundItems } = body;
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     if (!userId || !reason) {
       return NextResponse.json(

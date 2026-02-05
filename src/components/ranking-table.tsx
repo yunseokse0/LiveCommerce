@@ -6,9 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatNumber } from '@/lib/utils';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function RankingTable() {
   const { ranking, isLoading } = useLiveRanking();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
@@ -51,9 +53,9 @@ export function RankingTable() {
               )}
             </div>
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-zinc-400">
-              <span>{formatNumber(entry.viewerCount)}명 시청</span>
+              <span className="whitespace-nowrap">{formatNumber(entry.viewerCount)}{t('live.viewers')} {t('live.watching')}</span>
               <span>•</span>
-              <span>{entry.currentScore.toFixed(1)}점</span>
+              <span className="whitespace-nowrap">{entry.currentScore.toFixed(1)}{t('ranking.score')}</span>
             </div>
           </div>
         </Link>

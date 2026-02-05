@@ -8,9 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Package, Truck, CheckCircle, Clock, X } from 'lucide-react';
 import type { Order } from '@/types/product';
 import { mockOrders } from '@/data/mock-orders';
+import { useFormat } from '@/hooks/use-format';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const format = useFormat();
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
@@ -188,13 +192,13 @@ export default function OrdersPage() {
                           주문 #{order.id.substring(0, 8)}
                         </h3>
                         <p className="text-sm text-zinc-400">
-                          {new Date(order.createdAt).toLocaleString('ko-KR')}
+                          {format.dateTime(order.createdAt)}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold text-amber-400">
-                        {order.totalAmount.toLocaleString()}원
+                        {format.currency(order.totalAmount)}
                       </p>
                       <p className="text-sm text-zinc-400 mt-1">
                         {getStatusLabel(order.status)}
@@ -221,7 +225,7 @@ export default function OrdersPage() {
                               </span>
                             </div>
                             <span className="text-zinc-400">
-                              {(item.price * item.quantity).toLocaleString()}원
+                              {format.currency(item.price * item.quantity)}
                             </span>
                           </div>
                         ))}

@@ -18,6 +18,7 @@ import {
 import Link from 'next/link';
 import { mockLiveStreams, mockReplayStreams } from '@/data/mock-live-streams';
 import type { LiveEntry } from '@/types/bj';
+import { useTranslation } from '@/hooks/use-translation';
 
 function PlayerModalWrapper() {
   return (
@@ -40,6 +41,7 @@ const categories = [
 ];
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState<'viewer' | 'recent'>('viewer');
 
@@ -73,15 +75,15 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
-                지금 라이브 중
+                {t('home.title')}
               </h1>
               <p className="text-sm sm:text-base text-zinc-400">
-                실시간으로 진행되는 라이브 방송을 만나보세요
+                {t('home.subtitle')}
               </p>
             </div>
             <Link href="/live">
               <Button variant="outline" size="sm" className="hidden sm:flex">
-                전체보기
+                {t('home.viewAll')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
@@ -98,7 +100,7 @@ export default function HomePage() {
           <div className="mt-6 text-center sm:hidden">
             <Link href="/live">
               <Button variant="outline" className="w-full">
-                전체보기
+                {t('home.viewAll')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
@@ -111,7 +113,7 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
-                요즘 대세! 인기 라이브
+                {t('home.popularLive')}
               </h2>
             </div>
             <div className="flex items-center gap-2">
@@ -120,8 +122,8 @@ export default function HomePage() {
                 onChange={(e) => setSortBy(e.target.value as 'viewer' | 'recent')}
                 className="px-3 py-1.5 rounded-lg bg-secondary border border-zinc-800/80 text-sm focus:outline-none focus:border-amber-500/50"
               >
-                <option value="viewer">시청순</option>
-                <option value="recent">최신순</option>
+                <option value="viewer">{t('home.sortByViewer')}</option>
+                <option value="recent">{t('home.sortByRecent')}</option>
               </select>
             </div>
           </div>
@@ -165,20 +167,16 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
-                라이브는 놓쳤어도, 혜택은 놓치지 마세요!
+                {t('home.recentLive')}
               </h2>
             </div>
             <Link href="/replay">
               <Button variant="outline" size="sm" className="hidden sm:flex">
-                더보기
+                {t('home.viewAll')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
           </div>
-
-          <p className="text-sm sm:text-base text-zinc-400 mb-6">
-            지난 라이브 방송을 다시 보고 특가 혜택을 받아보세요
-          </p>
 
           {/* 다시보기 그리드 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -191,7 +189,7 @@ export default function HomePage() {
           <div className="mt-6 text-center sm:hidden">
             <Link href="/replay">
               <Button variant="outline" className="w-full">
-                더보기
+                {t('home.viewAll')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
@@ -201,10 +199,10 @@ export default function HomePage() {
         {/* 미니 랭킹 섹션 */}
         <section className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 md:py-12 border-t border-zinc-800/80">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">크리에이터 랭킹</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">{t('ranking.title')}</h2>
             <Link href="/ranking">
               <Button variant="outline" size="sm" className="hidden sm:flex">
-                전체 랭킹
+                {t('common.ranking')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Play, Eye, Clock } from 'lucide-react';
 import type { LiveEntry } from '@/types/bj';
 import { PlatformBadge } from './platform-badge';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface LiveStreamCardProps {
   stream: LiveEntry;
@@ -14,6 +15,7 @@ interface LiveStreamCardProps {
 }
 
 export function LiveStreamCard({ stream, showRank = false, rank }: LiveStreamCardProps) {
+  const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
   const router = useRouter();
 
@@ -40,19 +42,19 @@ export function LiveStreamCard({ stream, showRank = false, rank }: LiveStreamCar
 
     if (stream.isLive) {
       if (diffMins < 60) {
-        return `${diffMins}분 전 시작`;
+        return t('live.startedMinutesAgo', { minutes: diffMins });
       } else if (diffHours < 24) {
-        return `${diffHours}시간 전 시작`;
+        return t('live.startedHoursAgo', { hours: diffHours });
       } else {
-        return `${diffDays}일 전 시작`;
+        return t('live.startedDaysAgo', { days: diffDays });
       }
     } else {
       if (diffMins < 60) {
-        return `${diffMins}분 전 종료`;
+        return t('live.endedMinutesAgo', { minutes: diffMins });
       } else if (diffHours < 24) {
-        return `${diffHours}시간 전 종료`;
+        return t('live.endedHoursAgo', { hours: diffHours });
       } else {
-        return `${diffDays}일 전 종료`;
+        return t('live.endedDaysAgo', { days: diffDays });
       }
     }
   };
@@ -98,7 +100,7 @@ export function LiveStreamCard({ stream, showRank = false, rank }: LiveStreamCar
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm">
           <Eye className="w-3.5 h-3.5 text-white" />
           <span className="text-xs font-medium text-white">
-            {formatViewerCount(stream.viewerCount)} 시청
+            {formatViewerCount(stream.viewerCount)} {t('live.viewers')}
           </span>
         </div>
 

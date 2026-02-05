@@ -19,6 +19,7 @@ import { ProductManager } from '@/components/studio/product-manager';
 import { DeliveryManager } from '@/components/studio/delivery-manager';
 import { StreamingGuide } from '@/components/studio/streaming-guide';
 import { PromotionManager } from '@/components/studio/promotion-manager';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface StreamConfig {
   streamKey: string;
@@ -35,6 +36,7 @@ interface StreamStatus {
 
 export default function StudioPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [streamConfig, setStreamConfig] = useState<StreamConfig | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>({ isActive: false });
   const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +81,7 @@ export default function StudioPage() {
       setStreamConfig(data);
     } catch (error) {
       console.error('스트림 키 생성 오류:', error);
-      alert('스트림 키를 생성할 수 없습니다.');
+      alert(t('studio.generateKey') + ' ' + t('common.error'));
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +99,7 @@ export default function StudioPage() {
       <Header />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-6xl">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">크리에이터 스튜디오</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">{t('studio.title')}</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* 메인 컨텐츠 */}
@@ -105,17 +107,17 @@ export default function StudioPage() {
               {/* 방송 상태 카드 */}
               <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg sm:text-xl font-semibold">방송 상태</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold">{t('studio.streamStatus')}</h2>
                   <div className="flex items-center gap-2">
                     {streamStatus.isActive ? (
                       <>
                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-sm text-red-400">라이브</span>
+                        <span className="text-sm text-red-400">{t('studio.live')}</span>
                       </>
                     ) : (
                       <>
                         <div className="w-2 h-2 rounded-full bg-zinc-500" />
-                        <span className="text-sm text-zinc-400">오프라인</span>
+                        <span className="text-sm text-zinc-400">{t('studio.offline')}</span>
                       </>
                     )}
                   </div>
@@ -125,19 +127,19 @@ export default function StudioPage() {
                   <div className="space-y-4">
                     <p className="text-sm sm:text-base text-zinc-400">
                       {user 
-                        ? '방송을 시작하려면 먼저 스트림 키를 생성하세요.'
-                        : '로그인 후 스트림 키를 생성하여 방송을 시작할 수 있습니다.'}
+                        ? t('studio.generateKeyPrompt')
+                        : t('studio.generateKeyPromptGuest')}
                     </p>
                     <Button
                       onClick={generateStreamKey}
                       disabled={isLoading || !user}
                       className="w-full sm:w-auto"
                     >
-                      {isLoading ? '생성 중...' : '스트림 키 생성'}
+                      {isLoading ? t('studio.generating') : t('studio.generateKey')}
                     </Button>
                     {!user && (
                       <p className="text-xs text-zinc-500">
-                        스트림 키 생성을 위해 로그인이 필요합니다.
+                        {t('studio.loginRequired')}
                       </p>
                     )}
                   </div>
@@ -147,32 +149,32 @@ export default function StudioPage() {
                       <Button
                         onClick={() => {
                           // TODO: 방송 시작 로직
-                          alert('OBS에서 방송을 시작하세요.');
+                          alert(t('studio.startInOBS'));
                         }}
                         disabled={streamStatus.isActive}
                         className="flex-1"
                       >
                         <Play className="w-4 h-4 mr-2" />
-                        방송 시작
+                        {t('studio.startStream')}
                       </Button>
                       <Button
                         onClick={() => {
                           // TODO: 방송 종료 로직
-                          alert('OBS에서 방송을 종료하세요.');
+                          alert(t('studio.endInOBS'));
                         }}
                         disabled={!streamStatus.isActive}
                         variant="outline"
                         className="flex-1"
                       >
                         <Square className="w-4 h-4 mr-2" />
-                        방송 종료
+                        {t('studio.endStream')}
                       </Button>
                     </div>
 
                     {streamStatus.isActive && (
                       <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                         <p className="text-sm text-amber-400">
-                          현재 방송 중입니다. 시청자들이 스트림을 시청할 수 있습니다.
+                          {t('studio.currentlyStreaming')}
                         </p>
                       </div>
                     )}
@@ -185,27 +187,27 @@ export default function StudioPage() {
                 <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <Settings className="w-5 h-5 text-amber-400" />
-                    <h2 className="text-lg sm:text-xl font-semibold">방송 설정</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold">{t('studio.streamSettings')}</h2>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">방송 제목</label>
+                      <label className="block text-sm font-medium mb-2">{t('studio.streamTitle')}</label>
                       <input
                         type="text"
                         value={streamTitle}
                         onChange={(e) => setStreamTitle(e.target.value)}
-                        placeholder="방송 제목을 입력하세요"
+                        placeholder={t('studio.streamTitlePlaceholder')}
                         className="w-full px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">방송 설명</label>
+                      <label className="block text-sm font-medium mb-2">{t('studio.streamDescription')}</label>
                       <textarea
                         value={streamDescription}
                         onChange={(e) => setStreamDescription(e.target.value)}
-                        placeholder="방송 설명을 입력하세요"
+                        placeholder={t('studio.streamDescriptionPlaceholder')}
                         rows={4}
                         className="w-full px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80 focus:outline-none focus:border-amber-500/50 resize-none"
                       />
@@ -214,11 +216,11 @@ export default function StudioPage() {
                     <Button
                       onClick={() => {
                         // TODO: 방송 설정 저장
-                        alert('설정이 저장되었습니다.');
+                        alert(t('studio.settingsSaved'));
                       }}
                       className="w-full sm:w-auto"
                     >
-                      설정 저장
+                      {t('studio.saveSettings')}
                     </Button>
                   </div>
                 </div>
@@ -254,13 +256,13 @@ export default function StudioPage() {
             {streamConfig && (
               <div className="space-y-6 sm:space-y-8">
                 <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4">스트림 정보</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('studio.streamInfo')}</h2>
 
                   <div className="space-y-4">
                     {/* RTMP 서버 */}
                     <div>
                       <label className="block text-xs sm:text-sm font-medium mb-2 text-zinc-400">
-                        RTMP 서버
+                        {t('studio.rtmpServer')}
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -287,7 +289,7 @@ export default function StudioPage() {
                     {/* 스트림 키 */}
                     <div>
                       <label className="block text-xs sm:text-sm font-medium mb-2 text-zinc-400">
-                        스트림 키
+                        {t('studio.streamKey')}
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -314,7 +316,7 @@ export default function StudioPage() {
                     {/* HLS URL */}
                     <div>
                       <label className="block text-xs sm:text-sm font-medium mb-2 text-zinc-400">
-                        HLS 스트림 URL
+                        {t('studio.hlsUrl')}
                       </label>
                       <div className="flex gap-2">
                         <input
@@ -341,7 +343,7 @@ export default function StudioPage() {
                     {/* 스트림 ID */}
                     <div>
                       <label className="block text-xs sm:text-sm font-medium mb-2 text-zinc-400">
-                        스트림 ID
+                        {t('studio.streamId')}
                       </label>
                       <div className="px-3 py-2 rounded-lg bg-secondary border border-zinc-800/80">
                         <p className="text-xs sm:text-sm font-mono">{streamConfig.streamId}</p>
@@ -352,7 +354,7 @@ export default function StudioPage() {
 
                 {/* 빠른 링크 */}
                 <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
-                  <h2 className="text-lg sm:text-xl font-semibold mb-4">빠른 링크</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold mb-4">{t('studio.quickLinks')}</h2>
                   <div className="space-y-2">
                     <a
                       href={`/live?stream=${streamConfig.streamId}`}
@@ -361,7 +363,7 @@ export default function StudioPage() {
                       className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      방송 보기
+                      {t('studio.viewStream')}
                     </a>
                     <a
                       href="https://obsproject.com/"
@@ -370,7 +372,7 @@ export default function StudioPage() {
                       className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      OBS Studio 다운로드
+                      {t('studio.downloadOBS')}
                     </a>
                   </div>
                 </div>

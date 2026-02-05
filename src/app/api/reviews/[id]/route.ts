@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { rating, title, content, images } = body;
-    const reviewId = params.id;
+    const { id: reviewId } = await params;
 
     if (rating !== undefined && (rating < 1 || rating > 5)) {
       return NextResponse.json(
@@ -69,10 +69,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const reviewId = params.id;
+    const { id: reviewId } = await params;
 
     // Mock 데이터에서 리뷰 찾기
     const reviews = getLocalReviews();

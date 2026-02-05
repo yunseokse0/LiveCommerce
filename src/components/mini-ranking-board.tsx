@@ -6,9 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatNumber } from '@/lib/utils';
 import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function MiniRankingBoard() {
   const { ranking, isLoading } = useLiveRanking();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
@@ -25,7 +27,7 @@ export function MiniRankingBoard() {
   if (top5.length === 0) {
     return (
       <div className="text-center py-12 text-zinc-400">
-        랭킹 데이터가 없습니다.
+        {t('ranking.noData')}
       </div>
     );
   }
@@ -68,9 +70,9 @@ export function MiniRankingBoard() {
               )}
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-zinc-400">
-              <span>{formatNumber(entry.viewerCount)}명</span>
+              <span>{formatNumber(entry.viewerCount)}{t('live.viewers')}</span>
               <span>•</span>
-              <span>{entry.currentScore.toFixed(1)}점</span>
+              <span>{entry.currentScore.toFixed(1)}{t('ranking.score')}</span>
             </div>
           </div>
         </Link>

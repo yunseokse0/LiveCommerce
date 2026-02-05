@@ -3,11 +3,16 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Calendar, MapPin, Filter } from 'lucide-react';
 import { getSpecialtiesByRegion, type Specialty, type Season } from '@/data/region-specialties';
+import { getSpecialtiesByRegion as getCountrySpecialtiesByRegion, getSpecialtyName, getSpecialtyDescription } from '@/data/country-specialties';
+import type { CountrySpecialty } from '@/types/country';
+import { useI18n } from '@/store/i18n';
+import type { CountryCode } from '@/types/country';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface RegionSpecialtyListProps {
   regionId: string;
+  countryCode?: CountryCode;
 }
 
 const seasonColors: Record<Season, string> = {
@@ -29,31 +34,71 @@ const categoryIcons: Record<Specialty['category'], string> = {
   기타: '🌿',
 };
 
-export function RegionSpecialtyList({ regionId }: RegionSpecialtyListProps) {
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
+export function RegionSpecialtyList({ regionId, countryCode = 'KR' }: RegionSpecialtyListProps) {
+  const { locale } = useI18n();
+  const [specialties, setSpecialties] = useState<(Specialty | CountrySpecialty)[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<Season | '전체'>('전체');
   const [selectedCategory, setSelectedCategory] = useState<Specialty['category'] | '전체'>('전체');
   const [isLoading, setIsLoading] = useState(true);
+  const [useCountryData, setUseCountryData] = useState(countryCode !== 'KR');
 
   useEffect(() => {
     setIsLoading(true);
-    const regionSpecialties = getSpecialtiesByRegion(regionId);
+    
+    let regionSpecialties: (Specialty | CountrySpecialty)[] = [];
+    
+    if (useCountryData && countryCode !== 'KR') {
+      // 국가별 특산물 데이터 사용
+      regionSpecialties = getCountrySpecialtiesByRegion(regionId, countryCode);
+    } else {
+      // 기존 한국 특산물 데이터 사용
+      regionSpecialties = getSpecialtiesByRegion(regionId);
+    }
     
     let filtered = regionSpecialties;
     
     if (selectedSeason !== '전체') {
-      filtered = filtered.filter(
-        (s) => s.seasons.includes(selectedSeason) || s.seasons.includes('연중')
-      );
+      filtered = filtered.filter((s) => {
+        if ('seasonsLocalized' in s) {
+          // CountrySpecialty
+          const seasons = s.seasonsLocalized[locale] || s.seasons;
+          return seasons.includes(selectedSeason) || seasons.includes('연중');
+        } else {
+          // Specialty
+          return s.seasons.includes(selectedSeason) || s.seasons.includes('연중');
+        }
+      });
     }
     
     if (selectedCategory !== '전체') {
-      filtered = filtered.filter((s) => s.category === selectedCategory);
+      filtered = filtered.filter((s) => {
+        if ('categoryLocalized' in s) {
+          // CountrySpecialty - 카테고리 매핑 필요
+          const categoryMap: Record<string, Specialty['category']> = {
+            fruit: '과일',
+            vegetable: '채소',
+            seafood: '수산물',
+            livestock: '축산물',
+            processed: '가공식품',
+            grain: '곡물',
+            mushroom: '버섯',
+            other: '기타',
+          };
+          return categoryMap[s.category] === selectedCategory;
+        } else {
+          // Specialty
+          return s.category === selectedCategory;
+        }
+      });
     }
     
     setSpecialties(filtered);
     setIsLoading(false);
-  }, [regionId, selectedSeason, selectedCategory]);
+  }, [regionId, selectedSeason, selectedCategory, countryCode, locale, useCountryData]);
+
+  useEffect(() => {
+    setUseCountryData(countryCode !== 'KR');
+  }, [countryCode]);
 
   const allSeasons: (Season | '전체')[] = ['전체', '봄', '여름', '가을', '겨울', '연중'];
   const allCategories: (Specialty['category'] | '전체')[] = [
@@ -163,15 +208,25 @@ export function RegionSpecialtyList({ regionId }: RegionSpecialtyListProps) {
             )}
 
             {/* 카테고리 아이콘 */}
-            <div className="text-4xl sm:text-5xl mb-3">{categoryIcons[specialty.category]}</div>
+            <div className="text-4xl sm:text-5xl mb-3">
+              {'categoryLocalized' in specialty 
+                ? categoryIcons[specialty.category === 'fruit' ? '과일' : 
+                                 specialty.category === 'vegetable' ? '채소' :
+                                 specialty.category === 'seafood' ? '수산물' :
+                                 specialty.category === 'livestock' ? '축산물' :
+                                 specialty.category === 'processed' ? '가공식품' :
+                                 specialty.category === 'grain' ? '곡물' :
+                                 specialty.category === 'mushroom' ? '버섯' : '기타']
+                : categoryIcons[specialty.category]}
+            </div>
 
             {/* 특산물명 */}
             <h4 className="text-lg sm:text-xl font-bold mb-1 pr-8">
-              {specialty.name}
+              {'nameLocalized' in specialty ? getSpecialtyName(specialty, locale) : specialty.name}
             </h4>
 
             {/* 세부 지역 */}
-            {specialty.subRegion && (
+            {'subRegion' in specialty && specialty.subRegion && (
               <div className="flex items-center gap-1 text-xs sm:text-sm text-zinc-400 mb-2">
                 <MapPin className="w-3 h-3" />
                 <span>{specialty.subRegion}</span>
@@ -179,20 +234,25 @@ export function RegionSpecialtyList({ regionId }: RegionSpecialtyListProps) {
             )}
 
             {/* 설명 */}
-            {specialty.description && (
+            {('description' in specialty && specialty.description) && (
               <p className="text-xs sm:text-sm text-zinc-400 mb-3 line-clamp-2">
-                {specialty.description}
+                {'descriptionLocalized' in specialty 
+                  ? (getSpecialtyDescription(specialty, locale) || specialty.description)
+                  : specialty.description}
               </p>
             )}
 
             {/* 계절 태그 */}
             <div className="flex flex-wrap gap-1.5">
-              {specialty.seasons.map((season) => (
+              {('seasonsLocalized' in specialty 
+                ? (specialty.seasonsLocalized[locale] || specialty.seasons)
+                : specialty.seasons
+              ).map((season) => (
                 <span
                   key={season}
                   className={cn(
                     'px-2 py-0.5 rounded text-xs font-medium border',
-                    seasonColors[season]
+                    seasonColors[season as Season] || seasonColors['연중']
                   )}
                 >
                   {season}

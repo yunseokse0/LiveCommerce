@@ -28,7 +28,6 @@ export function TossPaymentWidget({
   const [isLoading, setIsLoading] = useState(false);
   const [isWidgetReady, setIsWidgetReady] = useState(false);
   const widgetRef = useRef<any>(null);
-  const paymentMethodsWidgetRef = useRef<any>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -42,21 +41,6 @@ export function TossPaymentWidget({
         }
 
         widgetRef.current = paymentWidget;
-
-        // 결제 수단 위젯 렌더링
-        const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
-          '#payment-widget',
-          { value: amount },
-          { variantKey: 'DEFAULT' }
-        );
-
-        paymentMethodsWidgetRef.current = paymentMethodsWidget;
-
-        // 이용약관 위젯 렌더링
-        paymentWidget.renderAgreement('#agreement-widget', {
-          variantKey: 'AGREEMENT',
-        });
-
         setIsWidgetReady(true);
       } catch (error: any) {
         console.error('결제 위젯 초기화 오류:', error);
@@ -71,10 +55,10 @@ export function TossPaymentWidget({
     return () => {
       mounted = false;
     };
-  }, [amount, onError]);
+  }, [onError]);
 
   const handlePayment = async () => {
-    if (!widgetRef.current || !paymentMethodsWidgetRef.current) {
+    if (!widgetRef.current) {
       onError('결제 위젯이 준비되지 않았습니다.');
       return;
     }
@@ -82,8 +66,9 @@ export function TossPaymentWidget({
     setIsLoading(true);
 
     try {
-      // 결제 요청
-      await widgetRef.current.requestPayment({
+      // v1 SDK: requestPayment 메서드 사용
+      await widgetRef.current.requestPayment('카드', {
+        amount,
         orderId,
         orderName,
         customerName: customerName || '고객',
@@ -99,12 +84,6 @@ export function TossPaymentWidget({
 
   return (
     <div className="space-y-6">
-      {/* 결제 수단 선택 */}
-      <div id="payment-widget" className="min-h-[200px]" />
-
-      {/* 이용약관 */}
-      <div id="agreement-widget" />
-
       {/* 결제 버튼 */}
       <Button
         onClick={handlePayment}

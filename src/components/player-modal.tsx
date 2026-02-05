@@ -21,6 +21,7 @@ export function PlayerModal() {
       title={live.title}
       streamUrl={live.streamUrl}
       hlsUrl={live.hlsUrl}
+      featuredProductId={live.featuredProductId}
     />
   );
 }

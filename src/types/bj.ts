@@ -28,6 +28,7 @@ export interface LiveEntry {
   thumbnailUrl?: string;
   hlsUrl?: string; // 자체 플랫폼 HLS 스트림 URL
   isNativeStream?: boolean; // 자체 플랫폼 스트림 여부
+  featuredProductId?: string; // 현재 소개 중인 상품 ID
 }
 
 export interface RankingEntry {

@@ -30,6 +30,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[0]}`,
     startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-1', // 현재 소개 중인 상품
     bj: {
       id: 'bj-1',
       name: '삼성공식파트너 보보',
@@ -53,6 +54,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[1]}`,
     startedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-2', // 현재 소개 중인 상품
     bj: {
       id: 'bj-2',
       name: '메이튼',

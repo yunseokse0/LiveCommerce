@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { adminNote } = body;
-    const refundId = params.id;
+    const { id: refundId } = await params;
 
     if (!adminNote || !adminNote.trim()) {
       return NextResponse.json(

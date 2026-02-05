@@ -8,26 +8,93 @@ import { extractYouTubeVideoId } from '@/lib/utils';
 import { PlatformBadge } from '@/components/platform-badge';
 import { LiveChat } from '@/components/live-chat';
 import { NativePlayer } from '@/components/native-player';
+import { LiveProductPopup } from '@/components/live-product-popup';
 import type { BJ } from '@/types/bj';
+import type { Product } from '@/types/product';
 
 interface UniversalPlayerProps {
   bj: BJ;
   title: string;
   streamUrl: string;
   hlsUrl?: string; // 자체 플랫폼 HLS 스트림 URL
+  featuredProductId?: string; // 현재 소개 중인 상품 ID
 }
 
-export function UniversalPlayer({ bj, title, streamUrl, hlsUrl }: UniversalPlayerProps) {
+export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductId }: UniversalPlayerProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [featuredProduct, setFeaturedProduct] = useState<Product | null>(null);
+  const [showProductPopup, setShowProductPopup] = useState(false);
 
   useEffect(() => {
     setIsOpen(true);
   }, []);
 
+  // 현재 소개 중인 상품 로드
+  useEffect(() => {
+    if (!featuredProductId) {
+      setFeaturedProduct(null);
+      setShowProductPopup(false);
+      return;
+    }
+
+    // Mock 데이터에서 먼저 찾기
+    import('@/data/mock-products').then(({ mockProducts }) => {
+      const product = mockProducts.find((p) => p.id === featuredProductId);
+      if (product) {
+        setFeaturedProduct(product);
+        setShowProductPopup(true);
+        return;
+      }
+    });
+
+    // API 호출
+    fetch(`/api/products/${featuredProductId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.product) {
+          setFeaturedProduct(data.product);
+          setShowProductPopup(true);
+        } else {
+          // API 실패 시 Mock 데이터 재시도
+          import('@/data/mock-products').then(({ mockProducts }) => {
+            const product = mockProducts.find((p) => p.id === featuredProductId);
+            if (product) {
+              setFeaturedProduct(product);
+              setShowProductPopup(true);
+            }
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('상품 조회 오류:', error);
+        // 에러 발생 시 Mock 데이터 재시도
+        import('@/data/mock-products').then(({ mockProducts }) => {
+          const product = mockProducts.find((p) => p.id === featuredProductId);
+          if (product) {
+            setFeaturedProduct(product);
+            setShowProductPopup(true);
+          }
+        });
+      });
+  }, [featuredProductId]);
+
   const handleClose = () => {
     setIsOpen(false);
     router.back();
+  };
+
+  const handleProductPopupClose = () => {
+    setShowProductPopup(false);
+  };
+
+  const handleAddToCart = () => {
+    // 구매 알림은 LiveChat에서 처리
+    // 여기서는 팝업만 닫지 않고 유지
+    if (featuredProduct) {
+      // LiveChat에 구매 알림 전달 (useChat 훅을 통해)
+      // 실제로는 LiveChat 컴포넌트 내부에서 처리
+    }
   };
 
   if (!isOpen) return null;
@@ -93,9 +160,19 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl }: UniversalPlaye
 
         {/* 채팅 - 모바일: 하단, 데스크톱: 오른쪽 */}
         <div className="w-full md:w-80 h-[40vh] md:h-full border-t md:border-t-0 md:border-l border-zinc-800/80 flex-shrink-0">
-          <LiveChat streamId={bj.id} />
+          <LiveChat streamId={bj.id} creatorId={bj.id} onPurchaseNotification={handleAddToCart} />
         </div>
       </div>
+
+      {/* 실시간 상품 팝업 */}
+      {showProductPopup && featuredProduct && (
+        <LiveProductPopup
+          product={featuredProduct}
+          streamId={bj.id}
+          onClose={handleProductPopupClose}
+          onAddToCart={handleAddToCart}
+        />
+      )}
     </div>
   );
 }
