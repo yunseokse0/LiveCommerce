@@ -14,6 +14,7 @@ interface DeliveryManagerProps {
 
 export function DeliveryManager({ className, adminMode = false }: DeliveryManagerProps) {
   const { user } = useAuth();
+  const toast = useToast();
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');

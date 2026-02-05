@@ -107,6 +107,11 @@ export default function OrdersPage() {
       return;
     }
 
+    if (!user) {
+      toast.warning('로그인이 필요합니다.');
+      return;
+    }
+
     setCancelDialog({ open: false, orderId: null, reason: '' });
     setCancellingOrderId(orderId);
     try {

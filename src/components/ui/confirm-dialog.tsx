@@ -10,7 +10,7 @@ export interface ConfirmDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message?: string;
+  message?: string | React.ReactNode;
   type?: 'info' | 'warning' | 'danger';
   confirmText?: string;
   cancelText?: string;
@@ -69,7 +69,11 @@ export function ConfirmDialog({
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold mb-2">{title}</h3>
             {message && (
-              <p className="text-sm text-zinc-400 break-words">{message}</p>
+              typeof message === 'string' ? (
+                <p className="text-sm text-zinc-400 break-words">{message}</p>
+              ) : (
+                <div className="text-sm text-zinc-400">{message}</div>
+              )
             )}
           </div>
         </div>
