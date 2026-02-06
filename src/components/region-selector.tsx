@@ -5,14 +5,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Globe, MapPin, ChevronDown, Check } from 'lucide-react';
-import { useI18n, type Locale } from '@/store/i18n';
-import { countryLocaleMap, countries } from '@/store/i18n';
+import { useI18n, type Locale, countries } from '@/store/i18n';
 import { getRegionsByCountry, getRegionName } from '@/data/country-regions';
-import type { CountryRegion } from '@/types/country';
+import type { CountryRegion, CountryCode } from '@/types/country';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/use-translation';
-import type { CountryCode } from '@/types/country';
 
 interface RegionSelectorProps {
   selectedRegionId?: string;
@@ -21,12 +20,13 @@ interface RegionSelectorProps {
 }
 
 export function RegionSelector({ selectedRegionId, onRegionSelect, className }: RegionSelectorProps) {
-  const { locale } = useI18n();
+  const { locale, selectedCountryCode, setSelectedCountryCode } = useI18n();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [portalPos, setPortalPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
-  const countryCode: CountryCode = countryLocaleMap[locale];
+  const countryCode: CountryCode = selectedCountryCode;
   const country = countries[countryCode];
   const regions = getRegionsByCountry(countryCode);
 
@@ -48,6 +48,26 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (!isOpen || !dropdownRef.current) return;
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const width = 256;
+      const left = Math.max(8, rect.left);
+      const top = rect.bottom + 8;
+      setPortalPos({ top, left, width });
+    };
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [isOpen]);
 
@@ -76,13 +96,34 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
         <ChevronDown className={cn('w-4 h-4 transition-transform', isOpen && 'rotate-180')} />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-50 max-h-[80vh] overflow-y-auto">
-          {/* 국가 헤더 */}
+      {isOpen && portalPos &&
+        createPortal(
+        <div className="bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-[9999] max-h-[80vh] overflow-y-auto"
+             style={{ position: 'fixed', top: portalPos.top, left: portalPos.left, width: portalPos.width }}>
+          {/* 국가 선택 */}
           <div className="p-3 border-b border-zinc-800/80">
-            <div className="flex items-center gap-2 text-xs text-zinc-400">
+            <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
               <Globe className="w-4 h-4" />
-              <span>{country.name}</span>
+              <span>국가 선택</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.values(countries).map((c) => (
+                <button
+                  key={c.code}
+                  onClick={() => {
+                    setSelectedCountryCode(c.code as CountryCode);
+                    onRegionSelect(null);
+                  }}
+                  className={cn(
+                    'px-2 py-1.5 rounded-lg border text-xs flex items-center justify-center gap-1',
+                    c.code === countryCode ? 'border-amber-500/50 bg-amber-500/10' : 'border-zinc-800/80 hover:bg-secondary'
+                  )}
+                >
+                  <span>{c.flag}</span>
+                  <span className="truncate max-w-[60px]">{c.name}</span>
+                  {c.code === countryCode && <Check className="w-3 h-3 text-amber-400" />}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -123,7 +164,8 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

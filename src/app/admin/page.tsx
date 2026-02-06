@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <ProtectedRoute requireAuth={false} requireAdmin={false}>
+    <ProtectedRoute requireAuth={false} requireAdmin={true}>
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-7xl">
           <div className="mb-6 sm:mb-8">

@@ -68,7 +68,10 @@
     "allSpecialtiesDesc": "すべての地域の季節特産物を確認してください",
     "viewAll": "すべて見る",
     "listView": "リスト",
-    "mapView": "地図"
+    "mapView": "地図",
+    "mapNotAvailable": "地図利用不可",
+    "mapNotAvailableDesc": "{country}の地図は現在準備中です。",
+    "useListView": "リスト表示をご利用ください。"
   },
   "cart": {
     "title": "ショッピングカート",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, X, CheckCircle, AlertCircle, Info, AlertTriangle, Trash2 } from 'lucide-react';
 import { useNotifications, type Notification } from '@/store/notifications';
 import { useRouter } from 'next/navigation';
@@ -21,6 +22,7 @@ export function NotificationCenter() {
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [portalPos, setPortalPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,6 +38,27 @@ export function NotificationCenter() {
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (!isOpen || !dropdownRef.current) return;
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const maxWidth = 384;
+      const width = Math.min(maxWidth, Math.max(320, window.innerWidth - 16));
+      const left = Math.max(8, rect.right - width);
+      const top = rect.top + 48;
+      setPortalPos({ top, left, width });
+    };
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [isOpen]);
 
@@ -90,8 +113,10 @@ export function NotificationCenter() {
         )}
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-12 w-80 sm:w-96 bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-50 max-h-[80vh] flex flex-col">
+      {isOpen && portalPos &&
+        createPortal(
+        <div className="bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-[9999] max-h-[80vh] flex flex-col"
+             style={{ position: 'fixed', top: portalPos.top, left: portalPos.left, width: portalPos.width }}>
           {/* 헤더 */}
           <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -196,7 +221,8 @@ export function NotificationCenter() {
               </Button>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

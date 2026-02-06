@@ -106,7 +106,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
     : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-sm">
       {/* 닫기 버튼 */}
       <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
         <button

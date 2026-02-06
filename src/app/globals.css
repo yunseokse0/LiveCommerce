@@ -11,6 +11,11 @@
 /* Leaflet 다크 모드 커스텀 스타일 */
 .leaflet-container {
   background: #1a1a1a !important;
+  z-index: 1;
+}
+
+.light .leaflet-container {
+  background: #f5f5f5 !important;
 }
 
 .leaflet-tile-container img {
@@ -73,6 +78,24 @@
 }
 
 :root {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --primary: oklch(0.922 0 0);
+  --secondary: oklch(0.269 0 0);
+  --border: oklch(1 0 0 / 10%);
+}
+
+.light {
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.5 0 0);
+  --secondary: oklch(0.95 0 0);
+  --border: oklch(0.9 0 0 / 20%);
+}
+
+.dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

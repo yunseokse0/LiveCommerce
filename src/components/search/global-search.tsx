@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, X, Clock, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { mockProducts } from '@/data/mock-products';
@@ -34,6 +35,7 @@ export function GlobalSearch() {
   ]);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [portalPos, setPortalPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   // 최근 검색어 로드
   useEffect(() => {
@@ -64,6 +66,26 @@ export function GlobalSearch() {
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (!isOpen || !searchRef.current) return;
+      const rect = searchRef.current.getBoundingClientRect();
+      const left = Math.max(8, rect.left);
+      const top = rect.bottom + 8;
+      const width = rect.width;
+      setPortalPos({ top, left, width });
+    };
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [isOpen]);
 
@@ -214,8 +236,10 @@ export function GlobalSearch() {
         )}
       </div>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-50 max-h-[80vh] overflow-y-auto">
+      {isOpen && portalPos &&
+        createPortal(
+        <div className="bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-[9999] max-h-[80vh] overflow-y-auto"
+             style={{ position: 'fixed', top: portalPos.top, left: portalPos.left, width: portalPos.width }}>
           {query ? (
             // 검색 결과
             results.length > 0 ? (
@@ -300,7 +324,8 @@ export function GlobalSearch() {
               </div>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

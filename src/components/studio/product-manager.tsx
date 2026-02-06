@@ -293,7 +293,7 @@ export function ProductManager({ onProductSelect, adminMode = false }: ProductMa
 
       {/* 상품 추가/수정 모달 */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-2xl border border-zinc-800/80 bg-card p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold mb-4">
               {editingProduct ? '상품 수정' : '상품 추가'}

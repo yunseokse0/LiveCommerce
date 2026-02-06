@@ -113,7 +113,7 @@ export function AdminSidebar() {
       {/* 모바일 오버레이 */}
       {isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          className="lg:hidden fixed inset-0 bg-black/50 z-[9999]"
           onClick={() => setIsMobileOpen(false)}
         />
       )}

@@ -68,7 +68,10 @@
     "allSpecialtiesDesc": "Xem đặc sản theo mùa từ tất cả các khu vực",
     "viewAll": "Xem tất cả",
     "listView": "Danh sách",
-    "mapView": "Bản đồ"
+    "mapView": "Bản đồ",
+    "mapNotAvailable": "Bản đồ không khả dụng",
+    "mapNotAvailableDesc": "Bản đồ cho {country} đang được chuẩn bị.",
+    "useListView": "Vui lòng sử dụng chế độ danh sách."
   },
   "cart": {
     "title": "Giỏ hàng",

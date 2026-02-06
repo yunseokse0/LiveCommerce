@@ -14,10 +14,17 @@ const adminRoutes = ['/admin'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const demoModeEnv = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+  const demoModeCookie = request.cookies.get('demo-mode')?.value === 'true';
   let response = NextResponse.next();
 
   // 보안 헤더 설정
   response = setSecurityHeaders(response);
+
+  // 데모 모드에서는 모든 경로 접근 허용
+  if (demoModeEnv || demoModeCookie) {
+    return response;
+  }
 
   // 관리자 경로는 별도 처리
   if (pathname.startsWith('/admin')) {

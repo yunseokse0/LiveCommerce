@@ -144,6 +144,8 @@ export function KoreaMapLeaflet({ onRegionSelect, selectedRegionId }: KoreaMapLe
     };
   }, []);
 
+  
+
   // 지역별 라이브 방송 수 계산
   const getRegionLiveCount = (regionId: string) => {
     return regionLiveCounts[regionId] || 0;
@@ -160,6 +162,47 @@ export function KoreaMapLeaflet({ onRegionSelect, selectedRegionId }: KoreaMapLe
   // 맵이 이미 초기화되었는지 확인
   const containerId = mapContainerIdRef.current;
   const shouldRenderMap = isMounted && !isInitializedRef.current && !initializedContainerIds.has(containerId);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const controlRoot = container.querySelector('.leaflet-control-container') as HTMLElement | null;
+    if (!controlRoot) return;
+    controlRoot.setAttribute('role', 'group');
+    controlRoot.setAttribute('aria-label', 'map controls');
+    const zoomInEl = container.querySelector('.leaflet-control-zoom-in') as HTMLElement | null;
+    const zoomOutEl = container.querySelector('.leaflet-control-zoom-out') as HTMLElement | null;
+    if (zoomInEl) {
+      zoomInEl.setAttribute('tabindex', '0');
+      zoomInEl.setAttribute('role', 'button');
+      zoomInEl.setAttribute('aria-label', 'Zoom in');
+    }
+    if (zoomOutEl) {
+      zoomOutEl.setAttribute('tabindex', '0');
+      zoomOutEl.setAttribute('role', 'button');
+      zoomOutEl.setAttribute('aria-label', 'Zoom out');
+    }
+    const focusables = Array.from(controlRoot.querySelectorAll('a,button,[tabindex]')) as HTMLElement[];
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (focusables.length === 0) return;
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const active = document.activeElement as HTMLElement | null;
+        const idx = active ? focusables.indexOf(active) : -1;
+        const nextIdx = e.shiftKey ? (idx <= 0 ? focusables.length - 1 : idx - 1) : (idx === -1 ? 0 : (idx + 1) % focusables.length);
+        focusables[nextIdx]?.focus();
+      }
+      if (e.key === ' ' || e.key === 'Enter') {
+        const active = document.activeElement as HTMLElement | null;
+        active?.click();
+        e.preventDefault();
+      }
+    };
+    controlRoot.addEventListener('keydown', handleKeyDown);
+    return () => {
+      controlRoot.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [shouldRenderMap]);
 
   return (
     <div className="relative w-full max-w-4xl mx-auto">

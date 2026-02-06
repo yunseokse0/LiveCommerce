@@ -9,23 +9,32 @@ import { NotificationCenter } from '@/components/notifications/notification-cent
 import { GlobalSearch } from '@/components/search/global-search';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSelector } from '@/components/language-selector';
+import { RegionSelector } from '@/components/region-selector';
 import { useAuth } from '@/store/auth';
 import { useCart } from '@/store/cart';
 import { useTranslation } from '@/hooks/use-translation';
+import { useI18n } from '@/store/i18n';
+import { getRegionsByCountry } from '@/data/country-regions';
+import type { CountryRegion } from '@/types/country';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { initialize } = useAuth();
   const { getTotalItems } = useCart();
   const { t } = useTranslation();
+  const { locale, selectedRegionId, setSelectedRegionId } = useI18n();
   const cartItemCount = getTotalItems();
+
+  const handleRegionSelect = (region: CountryRegion | null) => {
+    setSelectedRegionId(region?.id || null);
+  };
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-800/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-[10000] w-full border-b border-zinc-800/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-14 md:h-16 items-center justify-between">
           <Link href="/" className="text-lg md:text-xl font-bold">
@@ -66,6 +75,10 @@ export function Header() {
               )}
             </Link>
             <LanguageSelector />
+            <RegionSelector 
+              selectedRegionId={selectedRegionId || undefined}
+              onRegionSelect={handleRegionSelect}
+            />
             <NotificationCenter />
             <ThemeToggle />
             <UserMenu />
@@ -149,6 +162,12 @@ export function Header() {
             </Link>
             <div className="px-4 py-3 border-t border-zinc-800/80">
               <LanguageSelector />
+            </div>
+            <div className="px-4 py-3 border-t border-zinc-800/80">
+              <RegionSelector 
+                selectedRegionId={selectedRegionId || undefined}
+                onRegionSelect={handleRegionSelect}
+              />
             </div>
             <div className="px-4 py-3 border-t border-zinc-800/80 mt-2">
               <UserMenu />

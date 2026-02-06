@@ -61,7 +61,10 @@
     "allSpecialtiesDesc": "View seasonal specialties from all regions",
     "viewAll": "View All",
     "listView": "List",
-    "mapView": "Map"
+    "mapView": "Map",
+    "mapNotAvailable": "Map Not Available",
+    "mapNotAvailableDesc": "Map for {country} is currently being prepared.",
+    "useListView": "Please use the list view instead."
   },
   "cart": {
     "title": "Shopping Cart",

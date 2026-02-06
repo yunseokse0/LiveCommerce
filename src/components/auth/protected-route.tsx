@@ -18,26 +18,24 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading, initialized } = useAuth();
   const router = useRouter();
+  const isDemoMode = typeof window !== 'undefined' && window.localStorage.getItem('demoMode') === 'true';
 
   useEffect(() => {
     if (!initialized || loading) return;
 
-    if (requireAuth && !user) {
+    if (!isDemoMode && requireAuth && !user) {
       router.push('/auth/login');
       return;
     }
 
-    // 관리자 권한 체크 (임시로 비활성화 - 개발 중)
-    // TODO: 프로덕션 배포 전에 활성화 필요
-    // if (requireAdmin && user) {
-    //   const isAdmin = user.role === 'admin';
-    //   if (!isAdmin) {
-    //     // 관리자가 아닌 경우 홈으로 리다이렉트
-    //     router.push('/');
-    //     return;
-    //   }
-    // }
-  }, [user, loading, initialized, requireAuth, requireAdmin, router]);
+    if (!isDemoMode && requireAdmin && user) {
+      const isAdmin = user.role === 'admin';
+      if (!isAdmin) {
+        router.push('/');
+        return;
+      }
+    }
+  }, [user, loading, initialized, requireAuth, requireAdmin, router, isDemoMode]);
 
   if (!initialized || loading) {
     return (
@@ -50,15 +48,13 @@ export function ProtectedRoute({
     );
   }
 
-  if (requireAuth && !user) {
+  if (!isDemoMode && requireAuth && !user) {
     return null;
   }
 
-  // 관리자 권한 체크 (임시로 비활성화 - 개발 중)
-  // TODO: 프로덕션 배포 전에 활성화 필요
-  // if (requireAdmin && user && user.role !== 'admin') {
-  //   return null;
-  // }
+  if (!isDemoMode && requireAdmin && user && user.role !== 'admin') {
+    return null;
+  }
 
   return <>{children}</>;
 }

@@ -67,7 +67,10 @@
     "allSpecialtiesDesc": "ดูสินค้าพื้นเมืองตามฤดูกาลจากทุกภูมิภาค",
     "viewAll": "ดูทั้งหมด",
     "listView": "รายการ",
-    "mapView": "แผนที่"
+    "mapView": "แผนที่",
+    "mapNotAvailable": "แผนที่ไม่พร้อมใช้งาน",
+    "mapNotAvailableDesc": "แผนที่สำหรับ {country} กำลังอยู่ในระหว่างการเตรียมการ",
+    "useListView": "กรุณาใช้มุมมองรายการแทน"
   },
   "cart": {
     "title": "ตะกร้าสินค้า",

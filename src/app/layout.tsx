@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { NotificationProvider } from '@/components/providers/notification-provider';
 import { CartSyncProvider } from '@/components/providers/cart-sync-provider';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,11 +18,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body className={inter.className}>
-        {children}
-        <NotificationProvider />
-        <CartSyncProvider />
+        <ThemeProvider>
+          {children}
+          <NotificationProvider />
+          <CartSyncProvider />
+        </ThemeProvider>
       </body>
     </html>
   );

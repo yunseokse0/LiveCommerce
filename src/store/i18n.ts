@@ -4,21 +4,31 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { CountryCode } from '@/types/country';
 
 export type Locale = 'ko' | 'en' | 'ja' | 'zh-CN' | 'vi' | 'th';
 
 interface I18nState {
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  selectedCountryCode: CountryCode;
+  setSelectedCountryCode: (code: CountryCode) => void;
+  selectedRegionId: string | null;
+  setSelectedRegionId: (regionId: string | null) => void;
 }
 
 const DEFAULT_LOCALE: Locale = 'ko';
+const DEFAULT_COUNTRY: CountryCode = 'KR';
 
 export const useI18n = create<I18nState>()(
   persist(
     (set) => ({
       locale: DEFAULT_LOCALE,
       setLocale: (locale) => set({ locale }),
+      selectedCountryCode: DEFAULT_COUNTRY,
+      setSelectedCountryCode: (code) => set({ selectedCountryCode: code, selectedRegionId: null }),
+      selectedRegionId: null,
+      setSelectedRegionId: (regionId) => set({ selectedRegionId: regionId }),
     }),
     {
       name: 'i18n-storage',

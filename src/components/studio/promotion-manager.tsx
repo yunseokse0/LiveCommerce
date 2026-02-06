@@ -549,7 +549,7 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
 
       {/* 모달 - 쿠폰 생성/수정 */}
       {isModalOpen && activeTab === 'coupon' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-2xl rounded-2xl border border-zinc-800/80 bg-card p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold mb-4">
               {editingPromotion ? '쿠폰 수정' : '쿠폰 생성'}
@@ -718,7 +718,7 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
 
       {/* 모달 - 1+1 생성/수정 */}
       {isModalOpen && activeTab === 'bogo' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-2xl rounded-2xl border border-zinc-800/80 bg-card p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold mb-4">
               {editingPromotion ? '1+1 프로모션 수정' : '1+1 프로모션 생성'}
@@ -851,7 +851,7 @@ export function PromotionManager({ className, adminMode = false }: PromotionMana
 
       {/* 모달 - 사은품 생성/수정 */}
       {isModalOpen && activeTab === 'gift' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-2xl rounded-2xl border border-zinc-800/80 bg-card p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold mb-4">
               {editingPromotion ? '사은품 프로모션 수정' : '사은품 프로모션 생성'}
