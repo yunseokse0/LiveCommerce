@@ -54,7 +54,7 @@ export function LanguageSelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors border"
         aria-label="언어 선택"
       >
         <Globe className="w-4 h-4" />
@@ -64,31 +64,40 @@ export function LanguageSelector() {
 
       {isOpen && portalPos &&
         createPortal(
-          <div
-            className="bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-[9999] overflow-hidden"
-            style={{ position: 'fixed', top: portalPos.top, left: portalPos.left, width: portalPos.width }}
-          >
-            {Object.entries(locales).map(([key, info]) => {
-              const localeKey = key as Locale;
-              const isSelected = locale === localeKey;
-              return (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setLocale(localeKey);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-secondary transition-colors',
-                    isSelected && 'bg-amber-500/10'
-                  )}
-                >
-                  <span className="text-lg">{info.flag}</span>
-                  <span className="flex-1 text-sm">{info.nativeName}</span>
-                  {isSelected && <Check className="w-4 h-4 text-amber-400" />}
-                </button>
-              );
-            })}
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+            <div onClick={() => setIsOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+            <div
+              className="bg-card border rounded-xl shadow-2xl overflow-hidden"
+              style={{
+                position: 'absolute',
+                top: Math.min(portalPos.top, (window.innerHeight * 0.9) - 8),
+                left: window.innerWidth < 640 ? 8 : portalPos.left,
+                width: window.innerWidth < 640 ? Math.max(220, window.innerWidth - 16) : portalPos.width,
+                maxHeight: '70vh',
+              }}
+            >
+              {Object.entries(locales).map(([key, info]) => {
+                const localeKey = key as Locale;
+                const isSelected = locale === localeKey;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setLocale(localeKey);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-secondary transition-colors',
+                      isSelected && 'bg-amber-500/10'
+                    )}
+                  >
+                    <span className="text-lg">{info.flag}</span>
+                    <span className="flex-1 text-sm">{info.nativeName}</span>
+                    {isSelected && <Check className="w-4 h-4 text-amber-400" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>,
           document.body
         )

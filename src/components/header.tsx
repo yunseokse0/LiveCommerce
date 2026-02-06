@@ -34,7 +34,7 @@ export function Header() {
   }, [initialize]);
 
   return (
-    <header className="sticky top-0 z-[10000] w-full border-b border-zinc-800/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-[10000] w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-14 md:h-16 items-center justify-between">
           <Link href="/" className="text-lg md:text-xl font-bold">
@@ -100,7 +100,7 @@ export function Header() {
 
         {/* 모바일 메뉴 */}
         {isMenuOpen && (
-          <nav className="md:hidden border-t border-zinc-800/80 py-4 space-y-2">
+          <nav className="md:hidden border-t py-4 space-y-2">
             {/* 모바일 검색 */}
             <div className="px-4 mb-2">
               <GlobalSearch />
@@ -160,16 +160,16 @@ export function Header() {
                 </span>
               )}
             </Link>
-            <div className="px-4 py-3 border-t border-zinc-800/80">
+            <div className="px-4 py-3 border-t">
               <LanguageSelector />
             </div>
-            <div className="px-4 py-3 border-t border-zinc-800/80">
+            <div className="px-4 py-3 border-t">
               <RegionSelector 
                 selectedRegionId={selectedRegionId || undefined}
                 onRegionSelect={handleRegionSelect}
               />
             </div>
-            <div className="px-4 py-3 border-t border-zinc-800/80 mt-2">
+            <div className="px-4 py-3 border-t mt-2">
               <UserMenu />
             </div>
           </nav>

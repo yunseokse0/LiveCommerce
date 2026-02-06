@@ -82,7 +82,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'flex items-center gap-2 px-4 py-2 rounded-lg',
-          'bg-secondary border border-zinc-800/80',
+          'bg-secondary border',
           'hover:border-amber-500/50 transition-colors',
           'text-sm font-medium'
         )}
@@ -98,10 +98,17 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
 
       {isOpen && portalPos &&
         createPortal(
-        <div className="bg-card border border-zinc-800/80 rounded-xl shadow-2xl z-[9999] max-h-[80vh] overflow-y-auto"
-             style={{ position: 'fixed', top: portalPos.top, left: portalPos.left, width: portalPos.width }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+          <div onClick={() => setIsOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          <div className="bg-card border rounded-xl shadow-2xl max-h-[70vh] overflow-y-auto"
+               style={{
+                 position: 'absolute',
+                 top: Math.min(portalPos.top, (window.innerHeight * 0.9) - 8),
+                 left: window.innerWidth < 640 ? 8 : portalPos.left,
+                 width: window.innerWidth < 640 ? Math.max(240, window.innerWidth - 16) : portalPos.width
+               }}>
           {/* 국가 선택 */}
-          <div className="p-3 border-b border-zinc-800/80">
+          <div className="p-3 border-b">
             <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
               <Globe className="w-4 h-4" />
               <span>국가 선택</span>
@@ -116,7 +123,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
                   }}
                   className={cn(
                     'px-2 py-1.5 rounded-lg border text-xs flex items-center justify-center gap-1',
-                    c.code === countryCode ? 'border-amber-500/50 bg-amber-500/10' : 'border-zinc-800/80 hover:bg-secondary'
+                    c.code === countryCode ? 'border-amber-500/50 bg-amber-500/10' : 'hover:bg-secondary'
                   )}
                 >
                   <span>{c.flag}</span>
@@ -131,7 +138,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
           <button
             onClick={() => handleRegionClick(null)}
             className={cn(
-              'w-full text-left px-4 py-3 hover:bg-secondary transition-colors',
+              'w-full text-left px-4 py-3 hover:bg-secondary transition-colors border-b',
               'flex items-center justify-between',
               !selectedRegion && 'bg-amber-500/10'
             )}
@@ -141,7 +148,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
           </button>
 
           {/* 지역 목록 */}
-          <div className="divide-y divide-zinc-800/80">
+          <div className="divide-y">
             {regions.map((region) => (
               <button
                 key={region.id}
@@ -163,6 +170,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
                 )}
               </button>
             ))}
+          </div>
           </div>
         </div>,
         document.body

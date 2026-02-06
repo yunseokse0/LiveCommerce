@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import { X, Bell, ShoppingCart, Clock } from 'lucide-react';
 import { useLiveRanking } from '@/store/live-ranking';
 import { extractYouTubeVideoId } from '@/lib/utils';
 import { PlatformBadge } from '@/components/platform-badge';
@@ -11,6 +11,8 @@ import { NativePlayer } from '@/components/native-player';
 import { LiveProductPopup } from '@/components/live-product-popup';
 import type { BJ } from '@/types/bj';
 import type { Product } from '@/types/product';
+import { useCart } from '@/store/cart';
+import { useNotifications } from '@/store/notifications';
 
 interface UniversalPlayerProps {
   bj: BJ;
@@ -25,6 +27,10 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
   const [isOpen, setIsOpen] = useState(false);
   const [featuredProduct, setFeaturedProduct] = useState<Product | null>(null);
   const [showProductPopup, setShowProductPopup] = useState(false);
+  const [offerEndsAt, setOfferEndsAt] = useState<number | null>(null);
+  const [remaining, setRemaining] = useState<number>(0);
+  const { addItem } = useCart();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     setIsOpen(true);
@@ -35,6 +41,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
     if (!featuredProductId) {
       setFeaturedProduct(null);
       setShowProductPopup(false);
+      setOfferEndsAt(null);
       return;
     }
 
@@ -44,6 +51,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
       if (product) {
         setFeaturedProduct(product);
         setShowProductPopup(true);
+        setOfferEndsAt(Date.now() + 10 * 60 * 1000);
         return;
       }
     });
@@ -55,6 +63,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
         if (data.success && data.product) {
           setFeaturedProduct(data.product);
           setShowProductPopup(true);
+          setOfferEndsAt(Date.now() + 10 * 60 * 1000);
         } else {
           // API 실패 시 Mock 데이터 재시도
           import('@/data/mock-products').then(({ mockProducts }) => {
@@ -62,6 +71,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
             if (product) {
               setFeaturedProduct(product);
               setShowProductPopup(true);
+              setOfferEndsAt(Date.now() + 10 * 60 * 1000);
             }
           });
         }
@@ -74,10 +84,25 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
           if (product) {
             setFeaturedProduct(product);
             setShowProductPopup(true);
+            setOfferEndsAt(Date.now() + 10 * 60 * 1000);
           }
         });
       });
   }, [featuredProductId]);
+
+  useEffect(() => {
+    if (!offerEndsAt) {
+      setRemaining(0);
+      return;
+    }
+    const tick = () => {
+      const r = Math.max(0, Math.floor((offerEndsAt - Date.now()) / 1000));
+      setRemaining(r);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [offerEndsAt]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -95,6 +120,30 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
       // LiveChat에 구매 알림 전달 (useChat 훅을 통해)
       // 실제로는 LiveChat 컴포넌트 내부에서 처리
     }
+  };
+
+  const handleStickyAddToCart = () => {
+    if (featuredProduct) {
+      addItem(featuredProduct, 1);
+    }
+  };
+
+  const handleStickyBuyNow = () => {
+    if (featuredProduct) {
+      addItem(featuredProduct, 1);
+      router.push('/cart');
+    }
+  };
+
+  const handleSubscribe = () => {
+    addNotification({
+      type: 'info',
+      title: '라이브 알림 구독됨',
+      message: `${bj.name} 라이브 알림을 설정했습니다.`,
+      link: `/?stream=${bj.id}`,
+      linkText: '바로 시청',
+      category: 'live',
+    });
   };
 
   if (!isOpen) return null;
@@ -172,6 +221,49 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
           onClose={handleProductPopupClose}
           onAddToCart={handleAddToCart}
         />
+      )}
+
+      {featuredProduct && (
+        <div className="fixed left-0 right-0 bottom-0 z-[10000]">
+          <div className="mx-auto max-w-5xl">
+            <div className="m-3 sm:m-4 rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/20 to-amber-700/20 shadow-xl">
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                {featuredProduct.thumbnailUrl ? (
+                  <img src={featuredProduct.thumbnailUrl} alt={featuredProduct.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-black/50 border border-amber-500/30 flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-semibold truncate">{featuredProduct.name}</h3>
+                    <button onClick={handleSubscribe} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs border border-amber-500/40 hover:bg-amber-500/20 transition">
+                      <Bell className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="text-amber-400">알림 받기</span>
+                    </button>
+                  </div>
+                  <div className="text-xs sm:text-sm text-amber-300 font-bold mt-0.5">
+                    ₩{featuredProduct.price.toLocaleString()} · 잔여 {featuredProduct.stock}개
+                  </div>
+                </div>
+                <div className="hidden sm:flex items-center gap-2 mr-2">
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-amber-200">{Math.floor(remaining / 60)
+                    .toString()
+                    .padStart(2, '0')}:{(remaining % 60).toString().padStart(2, '0')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={handleStickyAddToCart} className="px-3 sm:px-4 py-2 rounded-xl bg-black/60 border border-amber-500/40 text-amber-300 hover:bg-black/80 transition">
+                    담기
+                  </button>
+                  <button onClick={handleStickyBuyNow} className="px-3 sm:px-4 py-2 rounded-xl bg-amber-500/80 hover:bg-amber-500 text-black font-semibold transition inline-flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4" />
+                    즉시구매
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
