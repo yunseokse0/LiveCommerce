@@ -5,25 +5,27 @@
  import { TrafficMonitor } from '@/components/admin/traffic-monitor';
  import { StockAlerts } from '@/components/admin/stock-alerts';
  import { Package, LayoutDashboard, Activity, BarChart3 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
  
  type MockTab = 'dashboard' | 'analytics' | 'monitoring' | 'stock';
  
  export default function AdminMockPage() {
    const [activeTab, setActiveTab] = useState<MockTab>('dashboard');
+  const { t } = useTranslation();
  
-   const tabs = [
-     { id: 'dashboard' as MockTab, label: '대시보드', icon: LayoutDashboard },
-     { id: 'analytics' as MockTab, label: '매출 분석', icon: BarChart3 },
-     { id: 'monitoring' as MockTab, label: '트래픽 모니터링', icon: Activity },
-     { id: 'stock' as MockTab, label: '재고 경고', icon: Package },
-   ];
+  const tabs = [
+    { id: 'dashboard' as MockTab, label: t('admin.dashboard'), icon: LayoutDashboard },
+    { id: 'analytics' as MockTab, label: t('admin.analytics'), icon: BarChart3 },
+    { id: 'monitoring' as MockTab, label: t('admin.monitoring'), icon: Activity },
+    { id: 'stock' as MockTab, label: t('admin.stockAlerts') || 'Stock Alerts', icon: Package },
+  ];
  
    return (
      <main className="min-h-screen bg-background">
        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8 max-w-7xl">
          <div className="mb-6 sm:mb-8">
-           <h1 className="text-2xl sm:text-3xl font-bold mb-2">관리자(Mock) - Cafe24 스타일</h1>
-           <p className="text-sm text-zinc-400">프론트엔드 전용 Mock 데이터로 구성된 관리자 페이지</p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t('admin.title')}</h1>
+          <p className="text-sm text-zinc-400">{t('admin.subtitle')}</p>
          </div>
  
          <div className="mb-6 overflow-x-auto">
@@ -48,21 +50,21 @@
              <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
                <div className="flex items-center gap-2 mb-6">
                  <BarChart3 className="w-5 h-5 text-amber-400" />
-                 <h2 className="text-lg sm:text-xl font-semibold">매출 분석</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">{t('admin.analytics')}</h2>
                </div>
                <SalesDashboard />
              </div>
              <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm">
                <div className="flex items-center gap-2 mb-6">
                  <Activity className="w-5 h-5 text-amber-400" />
-                 <h2 className="text-lg sm:text-xl font-semibold">트래픽 모니터링</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">{t('admin.monitoring')}</h2>
                </div>
                <TrafficMonitor />
              </div>
              <div className="p-4 sm:p-6 rounded-2xl border border-zinc-800/80 bg-card/50 backdrop-blur-sm lg:col-span-2">
                <div className="flex items-center gap-2 mb-6">
                  <Package className="w-5 h-5 text-amber-400" />
-                 <h2 className="text-lg sm:text-xl font-semibold">재고 경고</h2>
+                <h2 className="text-lg sm:text-xl font-semibold">{t('admin.stockAlerts') || 'Stock Alerts'}</h2>
                </div>
                <StockAlerts />
              </div>

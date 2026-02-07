@@ -24,7 +24,9 @@
     "success": "Thành công",
     "back": "Quay lại",
     "viewDetails": "Xem chi tiết",
-    "menu": "Menu"
+    "menu": "Menu",
+    "more": "Thêm",
+    "selected": "Đã chọn"
   },
   "home": {
     "title": "Đang phát trực tiếp",
@@ -71,7 +73,23 @@
     "mapView": "Bản đồ",
     "mapNotAvailable": "Bản đồ không khả dụng",
     "mapNotAvailableDesc": "Bản đồ cho {country} đang được chuẩn bị.",
-    "useListView": "Vui lòng sử dụng chế độ danh sách."
+    "useListView": "Vui lòng sử dụng chế độ danh sách.",
+    "noRegionStreams": "Hiện không có phát trực tiếp trong khu vực này",
+    "liveNowCount": "🔴 {count} đang phát",
+    "regionLiveLabel": "Phát trực tiếp khu vực"
+  },
+  "header": {
+    "languageRegion": "Ngôn ngữ/Khu vực",
+    "quickSettings": "Cài đặt nhanh",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "selectCountryRegion": "Chọn quốc gia/khu vực",
+    "showAll": "Hiển thị tất cả",
+    "compact": "Thu gọn"
+  },
+  "player": {
+    "loadingStream": "Đang tải luồng...",
+    "noStreamUrl": "Không có URL luồng.",
+    "subscribe": "Đăng ký"
   },
   "cart": {
     "title": "Giỏ hàng",
@@ -103,7 +121,8 @@
     "stock": "Tồn kho",
     "outOfStock": "Hết hàng",
     "notFound": "Không tìm thấy sản phẩm",
-    "backToHome": "Về trang chủ"
+    "backToHome": "Về trang chủ",
+    "remaining": "Còn lại {count}"
   },
   "reviews": {
     "anonymous": "Ẩn danh",
@@ -212,6 +231,7 @@
     "cardPayment": "Thanh toán bằng thẻ",
     "coinPayment": "Thanh toán bằng xu",
     "other": "Khác",
+    "stockAlerts": "Cảnh báo tồn kho",
     "topProducts": "Top 5 sản phẩm",
     "salesTrend": "Xu hướng doanh thu",
     "traffic": "Lưu lượng",

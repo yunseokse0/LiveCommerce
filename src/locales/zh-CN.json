@@ -24,7 +24,9 @@
     "success": "成功",
     "back": "返回",
     "viewDetails": "查看详情",
-    "menu": "菜单"
+    "menu": "菜单",
+    "more": "更多",
+    "selected": "已选择"
   },
   "home": {
     "title": "正在直播",
@@ -70,7 +72,23 @@
     "mapView": "地图",
     "mapNotAvailable": "地图不可用",
     "mapNotAvailableDesc": "{country}的地图正在准备中。",
-    "useListView": "请使用列表视图。"
+    "useListView": "请使用列表视图。",
+    "noRegionStreams": "该地区暂无直播",
+    "liveNowCount": "🔴 当前有 {count} 个直播",
+    "regionLiveLabel": "地区直播"
+  },
+  "header": {
+    "languageRegion": "语言/地区",
+    "quickSettings": "快速设置",
+    "selectLanguage": "选择语言",
+    "selectCountryRegion": "选择国家/地区",
+    "showAll": "全部显示",
+    "compact": "简洁模式"
+  },
+  "player": {
+    "loadingStream": "正在加载流...",
+    "noStreamUrl": "没有流 URL。",
+    "subscribe": "订阅"
   },
   "cart": {
     "title": "购物车",
@@ -102,7 +120,8 @@
     "stock": "库存",
     "outOfStock": "缺货",
     "notFound": "找不到商品",
-    "backToHome": "返回首页"
+    "backToHome": "返回首页",
+    "remaining": "剩余 {count} 件"
   },
   "reviews": {
     "anonymous": "匿名",
@@ -215,6 +234,7 @@
     "salesTrend": "销售趋势",
     "traffic": "流量",
     "currentUsers": "当前用户数",
+    "stockAlerts": "库存预警",
     "activeStreams": "同时直播数",
     "totalViewers": "总观看人数",
     "trafficStatus": "流量状态",

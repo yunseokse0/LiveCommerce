@@ -24,7 +24,9 @@
     "success": "Success",
     "back": "Back",
     "viewDetails": "View Details",
-    "menu": "Menu"
+    "menu": "Menu",
+    "more": "More",
+    "selected": "Selected"
   },
   "home": {
     "title": "Live Now",
@@ -56,6 +58,9 @@
     "subtitle": "Discover regional specialties and live streams",
     "selectRegion": "Select a region on the map",
     "regionSpecialties": "Regional Specialties",
+    "noRegionStreams": "No live streams in this region",
+    "liveNowCount": "🔴 {count} live now",
+    "regionLiveLabel": "Regional Live",
     "regionLiveStreams": "Regional Live Streams",
     "allSpecialties": "All Specialties",
     "allSpecialtiesDesc": "View seasonal specialties from all regions",
@@ -65,6 +70,19 @@
     "mapNotAvailable": "Map Not Available",
     "mapNotAvailableDesc": "Map for {country} is currently being prepared.",
     "useListView": "Please use the list view instead."
+  },
+  "header": {
+    "languageRegion": "Language/Region",
+    "quickSettings": "Quick Settings",
+    "selectLanguage": "Select Language",
+    "selectCountryRegion": "Select Country/Region",
+    "showAll": "Show All",
+    "compact": "Compact"
+  },
+  "player": {
+    "loadingStream": "Loading stream...",
+    "noStreamUrl": "No stream URL available.",
+    "subscribe": "Subscribe"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -96,7 +114,8 @@
     "stock": "Stock",
     "outOfStock": "Out of Stock",
     "notFound": "Product not found",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "remaining": "{count} left"
   },
   "orders": {
     "title": "Order History",
@@ -197,7 +216,8 @@
     "streamViewers": "Stream Viewers",
     "goToUserPage": "Go to User Page",
     "menuOpen": "Open Menu",
-    "menuClose": "Close Menu"
+    "menuClose": "Close Menu",
+    "stockAlerts": "Stock Alerts"
   },
   "notifications": {
     "title": "Notifications",
@@ -207,7 +227,10 @@
     "live": "Live",
     "delivery": "Delivery",
     "product": "Product",
-    "system": "System"
+    "system": "System",
+    "liveSubscribed": "Live notifications subscribed",
+    "liveSubscribedMessage": "{name} live notifications are set.",
+    "watchNow": "Watch Now"
   },
   "search": {
     "placeholder": "Search products, creators, regions...",

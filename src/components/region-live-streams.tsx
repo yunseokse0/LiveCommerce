@@ -8,6 +8,7 @@ import { formatNumber } from '@/lib/utils';
 import { Play, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LiveEntry } from '@/types/bj';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface RegionLiveStreamsProps {
   regionId: string;
@@ -16,6 +17,7 @@ interface RegionLiveStreamsProps {
 export function RegionLiveStreams({ regionId }: RegionLiveStreamsProps) {
   const [streams, setStreams] = useState<LiveEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchStreams = async () => {
@@ -54,7 +56,7 @@ export function RegionLiveStreams({ regionId }: RegionLiveStreamsProps) {
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-800/50 mb-4">
           <Play className="w-8 h-8 text-zinc-500" />
         </div>
-        <p className="text-zinc-400">현재 이 지역의 라이브 방송이 없습니다.</p>
+        <p className="text-zinc-400">{t('map.noRegionStreams')}</p>
       </div>
     );
   }
@@ -108,7 +110,7 @@ export function RegionLiveStreams({ regionId }: RegionLiveStreamsProps) {
             {/* 시청자 수 */}
             <div className="absolute bottom-2 right-2">
               <span className="px-2 py-1 bg-black/70 text-white text-xs rounded backdrop-blur-sm">
-                {formatNumber(live.viewerCount)}명
+                {formatNumber(live.viewerCount)} {t('live.viewers')}
               </span>
             </div>
           </div>
@@ -119,7 +121,7 @@ export function RegionLiveStreams({ regionId }: RegionLiveStreamsProps) {
             <div className="flex items-center gap-1.5 mb-2">
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-[10px] sm:text-xs text-amber-400 font-medium">
-                지역 방송
+                {t('map.regionLiveLabel')}
               </span>
             </div>
 

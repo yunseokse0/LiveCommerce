@@ -8,6 +8,7 @@ import { koreaMapPathDetailed } from '@/data/korea-map-svg';
 import type { Region } from '@/types/region';
 import { Sparkles, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface KoreaMapProps {
   onRegionSelect?: (region: Region) => void;
@@ -18,6 +19,7 @@ export function KoreaMap({ onRegionSelect, selectedRegionId }: KoreaMapProps) {
   const [hoveredRegionId, setHoveredRegionId] = useState<string | null>(null);
   const [regionLiveCounts, setRegionLiveCounts] = useState<Record<string, number>>({});
   const { liveList } = useLiveRanking();
+  const { t } = useTranslation();
 
   // 클라이언트에서만 실행되도록 useEffect 사용
   useEffect(() => {
@@ -253,7 +255,7 @@ export function KoreaMap({ onRegionSelect, selectedRegionId }: KoreaMapProps) {
                         )}
                         {liveCount > 0 && (
                           <div className="text-[10px] sm:text-xs text-red-400 mt-1">
-                            {liveCount}개 방송 중
+                            {t('map.liveNowCount', { count: liveCount })}
                           </div>
                         )}
                       </div>

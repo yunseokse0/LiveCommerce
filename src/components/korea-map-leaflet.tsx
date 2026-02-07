@@ -10,6 +10,7 @@ import { Sparkles, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useTranslation } from '@/hooks/use-translation';
 
 // Leaflet 맵 인스턴스 추적 (중복 초기화 방지)
 // 컨테이너 ID 기반으로 관리하여 더 안정적인 추적
@@ -94,6 +95,7 @@ export function KoreaMapLeaflet({ onRegionSelect, selectedRegionId }: KoreaMapLe
   const mapContainerIdRef = useRef<string>(`map-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   const isInitializedRef = useRef(false);
   const { liveList } = useLiveRanking();
+  const { t } = useTranslation();
 
   // 클라이언트에서만 실행되도록 useEffect 사용
   useEffect(() => {
@@ -300,7 +302,7 @@ export function KoreaMapLeaflet({ onRegionSelect, selectedRegionId }: KoreaMapLe
                     )}
                     {liveCount > 0 && (
                       <div className="text-xs text-red-400 font-semibold pt-2 border-t border-zinc-700">
-                        🔴 {liveCount}개 방송 중
+                        {t('map.liveNowCount', { count: liveCount })}
                       </div>
                     )}
                   </div>

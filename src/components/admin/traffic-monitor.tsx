@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { Users, Radio, Eye, Activity, AlertCircle } from 'lucide-react';
 import { useLiveRanking } from '@/store/live-ranking';
+import { useTranslation } from '@/hooks/use-translation';
 
 export function TrafficMonitor() {
   const { liveList } = useLiveRanking();
   const [currentUsers, setCurrentUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Mock 데이터: 현재 접속자 수 (실제로는 서버에서 가져와야 함)
@@ -48,7 +50,7 @@ export function TrafficMonitor() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-8 text-zinc-400">로딩 중...</div>
+      <div className="text-center py-8 text-zinc-400">{t('common.loading')}</div>
     );
   }
 
@@ -62,7 +64,7 @@ export function TrafficMonitor() {
             <Users className="w-5 h-5 text-blue-400" />
           </div>
           <p className="text-2xl font-bold text-white">
-            {currentUsers.toLocaleString()}명
+            {currentUsers.toLocaleString()} {t('live.viewers')}
           </p>
           <div className="mt-2 flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -89,10 +91,10 @@ export function TrafficMonitor() {
             <Eye className="w-5 h-5 text-amber-400" />
           </div>
           <p className="text-2xl font-bold text-white">
-            {totalViewers.toLocaleString()}명
+            {totalViewers.toLocaleString()} {t('live.viewers')}
           </p>
           <p className="text-xs text-zinc-400 mt-1">
-            평균 {avgViewers.toLocaleString()}명/방송
+            평균 {avgViewers.toLocaleString()} {t('live.viewers')}/방송
           </p>
         </div>
 
@@ -158,7 +160,7 @@ export function TrafficMonitor() {
                 </div>
               ))
           ) : (
-            <p className="text-center text-zinc-400 py-8">현재 방송 중인 라이브가 없습니다.</p>
+            <p className="text-center text-zinc-400 py-8">{t('live.noStreams')}</p>
           )}
         </div>
       </div>

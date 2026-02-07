@@ -120,10 +120,10 @@ export function Header() {
                 setIsMoreOpen(false);
               }}
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors border"
-              aria-label="언어/지역 선택"
+              aria-label={t('header.languageRegion')}
             >
               <Globe className="w-4 h-4" />
-              <span className="text-sm">언어/지역</span>
+              <span className="text-sm">{t('header.languageRegion')}</span>
               <ChevronDown className={cn('w-4 h-4 transition-transform', isLocaleOpen && 'rotate-180')} />
             </button>
           </div>
@@ -169,7 +169,7 @@ export function Header() {
               className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-secondary transition-colors border"
             >
               <Globe className="w-4 h-4" />
-              <span className="text-sm">언어/지역</span>
+              <span className="text-sm">{t('header.languageRegion')}</span>
               <span className="text-xs text-amber-400 hidden xl:inline">
                 {selectedRegion ? selectedRegion.name : currentCountry.name}
               </span>
@@ -183,7 +183,7 @@ export function Header() {
                 setIsLocaleOpen(false);
               }}
              className="p-1.5 rounded-lg hover:bg-secondary transition-colors border"
-              aria-label="더보기"
+              aria-label={t('common.more')}
             >
               <MoreHorizontal className="w-5 h-5" />
             </button>
@@ -192,7 +192,7 @@ export function Header() {
               className="px-2 py-0.5 text-xs"
               onClick={() => setIsNavCollapsed((v) => !v)}
             >
-              {isNavCollapsed ? '전체 보기' : '간단히'}
+              {isNavCollapsed ? t('header.showAll') : t('header.compact')}
             </Button>
             <UserMenu />
           </nav>
@@ -294,7 +294,7 @@ export function Header() {
               }}
             >
               <div className="p-3 border-b">
-                <p className="text-xs text-[var(--muted)] mb-2">빠른 설정</p>
+                    <p className="text-xs text-[var(--muted)] mb-2">{t('header.quickSettings')}</p>
                 <div className="flex items-center gap-2">
                   <NotificationCenter />
                   <ThemeToggle />
@@ -333,7 +333,7 @@ export function Header() {
             >
               <div className="p-3 border-b flex items-center gap-2 text-xs text-[var(--muted)]">
                 <Globe className="w-4 h-4" />
-                <span>언어 선택</span>
+                    <span>{t('header.selectLanguage')}</span>
               </div>
               {Object.entries(locales).map(([key, info]) => (
                 <button
@@ -350,7 +350,7 @@ export function Header() {
               ))}
               <div className="p-3 border-t flex items-center gap-2 text-xs text-[var(--muted)]">
                 <MapPin className="w-4 h-4 text-amber-400" />
-                <span>국가/지역 선택</span>
+                    <span>{t('header.selectCountryRegion')}</span>
               </div>
               <div className="grid grid-cols-3 gap-2 px-3 pb-3">
                 {Object.values(countries).map((c) => (
@@ -377,7 +377,7 @@ export function Header() {
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-secondary transition-colors"
               >
-                전체 지역
+                    {t('map.allRegions')}
               </button>
               <div className="divide-y">
                 {regions.map((region) => (
@@ -391,7 +391,7 @@ export function Header() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm">{region.name}</span>
-                      {selectedRegionId === region.id && <span className="text-xs text-amber-400">선택됨</span>}
+                          {selectedRegionId === region.id && <span className="text-xs text-amber-400">{t('common.selected')}</span>}
                     </div>
                   </button>
                 ))}

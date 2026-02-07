@@ -13,6 +13,7 @@ import type { BJ } from '@/types/bj';
 import type { Product } from '@/types/product';
 import { useCart } from '@/store/cart';
 import { useNotifications } from '@/store/notifications';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface UniversalPlayerProps {
   bj: BJ;
@@ -31,6 +32,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
   const [remaining, setRemaining] = useState<number>(0);
   const { addItem } = useCart();
   const { addNotification } = useNotifications();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setIsOpen(true);
@@ -140,10 +142,10 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
   const handleSubscribe = () => {
     addNotification({
       type: 'info',
-      title: '라이브 알림 구독됨',
-      message: `${bj.name} 라이브 알림을 설정했습니다.`,
+      title: t('notifications.liveSubscribed'),
+      message: t('notifications.liveSubscribedMessage', { name: bj.name }),
       link: `/?stream=${bj.id}`,
-      linkText: '바로 시청',
+      linkText: t('notifications.watchNow'),
       category: 'live',
     });
   };
@@ -164,7 +166,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
         <button
           onClick={handleClose}
           className="p-2 sm:p-2.5 rounded-full bg-black/70 hover:bg-black/90 active:bg-black transition-colors touch-manipulation"
-          aria-label="닫기"
+          aria-label={t('common.close')}
         >
           <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </button>
@@ -204,7 +206,7 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-zinc-400 text-sm sm:text-base">
-                {hlsUrl ? '스트림을 로딩 중...' : '스트림 URL이 없습니다.'}
+                {hlsUrl ? t('player.loadingStream') : t('player.noStreamUrl')}
               </div>
             )}
           </div>
@@ -251,11 +253,11 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
                     <h3 className="text-sm sm:text-base font-semibold truncate">{featuredProduct.name}</h3>
                     <button onClick={handleSubscribe} className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs border border-amber-500/40 hover:bg-amber-500/20 transition">
                       <Bell className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="text-amber-400">알림 받기</span>
+                    <span className="text-amber-400">{t('player.subscribe')}</span>
                     </button>
                   </div>
                   <div className="text-xs sm:text-sm text-amber-300 font-bold mt-0.5">
-                    ₩{featuredProduct.price.toLocaleString()} · 잔여 {featuredProduct.stock}개
+                  ₩{featuredProduct.price.toLocaleString()} · {t('product.remaining', { count: featuredProduct.stock })}
                   </div>
                 </div>
                 <div className="hidden sm:flex items-center gap-2 mr-2">
@@ -266,11 +268,11 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={handleStickyAddToCart} className="px-3 sm:px-4 py-2 rounded-xl bg-black/60 border border-amber-500/40 text-amber-300 hover:bg-black/80 transition">
-                    담기
+                  {t('product.addToCart')}
                   </button>
                   <button onClick={handleStickyBuyNow} className="px-3 sm:px-4 py-2 rounded-xl bg-amber-500/80 hover:bg-amber-500 text-black font-semibold transition inline-flex items-center gap-2">
                     <ShoppingCart className="w-4 h-4" />
-                    즉시구매
+                  {t('product.buyNow')}
                   </button>
                 </div>
               </div>

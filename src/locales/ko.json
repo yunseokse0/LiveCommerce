@@ -25,7 +25,9 @@
     "back": "뒤로가기",
     "viewDetails": "자세히 보기",
     "menu": "메뉴",
-    "backToHome": "홈으로 돌아가기"
+    "backToHome": "홈으로 돌아가기",
+    "more": "더보기",
+    "selected": "선택됨"
   },
   "home": {
     "title": "지금 라이브 중",
@@ -71,7 +73,23 @@
     "mapView": "지도",
     "mapNotAvailable": "지도 사용 불가",
     "mapNotAvailableDesc": "{country}의 지도는 현재 준비 중입니다.",
-    "useListView": "리스트 보기를 사용해주세요."
+    "useListView": "리스트 보기를 사용해주세요.",
+    "noRegionStreams": "현재 이 지역의 라이브 방송이 없습니다",
+    "liveNowCount": "🔴 {count}개 방송 중",
+    "regionLiveLabel": "지역 방송"
+  },
+  "header": {
+    "languageRegion": "언어/지역",
+    "quickSettings": "빠른 설정",
+    "selectLanguage": "언어 선택",
+    "selectCountryRegion": "국가/지역 선택",
+    "showAll": "전체 보기",
+    "compact": "간단히"
+  },
+  "player": {
+    "loadingStream": "스트림을 로딩 중...",
+    "noStreamUrl": "스트림 URL이 없습니다.",
+    "subscribe": "알림 받기"
   },
   "cart": {
     "title": "장바구니",
@@ -110,7 +128,8 @@
     "notFound": "상품을 찾을 수 없습니다",
     "notFoundDesc": "요청하신 상품이 존재하지 않거나 삭제되었습니다",
     "notFound": "제품을 찾을 수 없습니다",
-    "backToHome": "홈으로 돌아가기"
+    "backToHome": "홈으로 돌아가기",
+    "remaining": "잔여 {count}개"
   },
   "reviews": {
     "anonymous": "익명",
@@ -232,7 +251,8 @@
     "streamViewers": "방송별 시청자 현황",
     "goToUserPage": "사용자 페이지로",
     "menuOpen": "메뉴 열기",
-    "menuClose": "메뉴 닫기"
+    "menuClose": "메뉴 닫기",
+    "stockAlerts": "재고 경고"
   },
   "notifications": {
     "title": "알림",
@@ -242,7 +262,10 @@
     "live": "라이브",
     "delivery": "배송",
     "product": "상품",
-    "system": "시스템"
+    "system": "시스템",
+    "liveSubscribed": "라이브 알림 구독됨",
+    "liveSubscribedMessage": "{name} 라이브 알림을 설정했습니다.",
+    "watchNow": "바로 시청"
   },
   "search": {
     "placeholder": "상품, 크리에이터, 지역 검색...",
