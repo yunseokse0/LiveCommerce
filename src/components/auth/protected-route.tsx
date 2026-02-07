@@ -18,24 +18,23 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading, initialized } = useAuth();
   const router = useRouter();
-  const isDemoMode = typeof window !== 'undefined' && window.localStorage.getItem('demoMode') === 'true';
 
   useEffect(() => {
     if (!initialized || loading) return;
 
-    if (!isDemoMode && requireAuth && !user) {
+    if (requireAuth && !user) {
       router.push('/auth/login');
       return;
     }
 
-    if (!isDemoMode && requireAdmin && user) {
+    if (requireAdmin && user) {
       const isAdmin = user.role === 'admin';
       if (!isAdmin) {
         router.push('/');
         return;
       }
     }
-  }, [user, loading, initialized, requireAuth, requireAdmin, router, isDemoMode]);
+  }, [user, loading, initialized, requireAuth, requireAdmin, router]);
 
   if (!initialized || loading) {
     return (
@@ -48,11 +47,11 @@ export function ProtectedRoute({
     );
   }
 
-  if (!isDemoMode && requireAuth && !user) {
+  if (requireAuth && !user) {
     return null;
   }
 
-  if (!isDemoMode && requireAdmin && user && user.role !== 'admin') {
+  if (requireAdmin && user && user.role !== 'admin') {
     return null;
   }
 

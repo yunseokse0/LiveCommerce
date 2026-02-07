@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/store/auth';
 import { signOut } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { User, LogOut, Settings, ChevronDown, Radio } from 'lucide-react';
+import { User, LogOut, Settings, ChevronDown, Radio, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function UserMenu() {
@@ -62,29 +63,6 @@ export function UserMenu() {
         >
           로그인
         </button>
-        <div className="hidden md:flex items-center gap-1">
-          <button
-            onClick={() => handleDemoLogin('user')}
-            className="px-2 py-1 rounded bg-secondary border border-zinc-800/80 text-xs hover:border-amber-500/50"
-            title="데모 사용자"
-          >
-            데모 사용자
-          </button>
-          <button
-            onClick={() => handleDemoLogin('seller')}
-            className="px-2 py-1 rounded bg-secondary border border-zinc-800/80 text-xs hover:border-amber-500/50"
-            title="데모 셀러"
-          >
-            데모 셀러
-          </button>
-          <button
-            onClick={() => handleDemoLogin('admin')}
-            className="px-2 py-1 rounded bg-secondary border border-zinc-800/80 text-xs hover:border-amber-500/50"
-            title="데모 관리자"
-          >
-            데모 관리자
-          </button>
-        </div>
       </div>
     );
   }
@@ -168,6 +146,16 @@ export function UserMenu() {
             >
               <Radio className="w-4 h-4" />
               크리에이터 스튜디오
+            </button>
+            <button
+              onClick={() => {
+                router.push('/admin');
+                setIsOpen(false);
+              }}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-secondary transition-colors flex items-center gap-2"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              관리자 대시보드
             </button>
             
             <button

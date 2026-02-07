@@ -1,4 +1,4 @@
-export type Platform = 'youtube' | 'native';
+export type Platform = 'youtube' | 'native' | 'tiktok';
 
 export interface BJ {
   id: string;

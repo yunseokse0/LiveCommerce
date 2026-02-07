@@ -7,6 +7,7 @@ import { UniversalPlayer } from '@/components/universal-player';
 export function PlayerModal() {
   const searchParams = useSearchParams();
   const streamId = searchParams.get('stream');
+  const queryProductId = searchParams.get('product');
   const { liveList } = useLiveRanking();
 
   if (!streamId) return null;
@@ -21,7 +22,7 @@ export function PlayerModal() {
       title={live.title}
       streamUrl={live.streamUrl}
       hlsUrl={live.hlsUrl}
-      featuredProductId={live.featuredProductId}
+      featuredProductId={queryProductId || live.featuredProductId}
     />
   );
 }

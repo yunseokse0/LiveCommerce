@@ -63,14 +63,9 @@ export function NativePlayer({
       }
     });
 
-    // 로딩 상태
-    player.on('loadstart', () => {
-      console.log('[NativePlayer] Loading started');
-    });
-
-    player.on('canplay', () => {
-      console.log('[NativePlayer] Can play');
-    });
+    // 로딩 상태 이벤트 핸들러 (콘솔 노이즈 제거)
+    player.on('loadstart', () => {});
+    player.on('canplay', () => {});
 
     // 정리 함수
     return () => {

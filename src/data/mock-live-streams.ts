@@ -78,6 +78,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[2]}`,
     startedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-6', // 현재 소개 중인 상품
     bj: {
       id: 'bj-3',
       name: '건강라이프',
@@ -101,6 +102,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[3]}`,
     startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-4', // 현재 소개 중인 상품
     bj: {
       id: 'bj-4',
       name: '뷰티크리에이터',
@@ -124,6 +126,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[4]}`,
     startedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-7', // 현재 소개 중인 상품
     bj: {
       id: 'bj-5',
       name: '맛있는집',
@@ -147,6 +150,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[5]}`,
     startedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-3', // 현재 소개 중인 상품
     bj: {
       id: 'bj-6',
       name: '과일나라',
@@ -170,6 +174,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[6]}`,
     startedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-1', // 현재 소개 중인 상품
     bj: {
       id: 'bj-7',
       name: '테크리뷰어',
@@ -193,6 +198,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[7]}`,
     startedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-5', // 현재 소개 중인 상품
     bj: {
       id: 'bj-8',
       name: '키즈라이프',
@@ -217,6 +223,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[0]}`,
     startedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-8', // 현재 소개 중인 상품
     bj: {
       id: 'bj-9',
       name: '뷰티스타일리스트',
@@ -240,6 +247,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[1]}`,
     startedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-10', // 현재 소개 중인 상품
     bj: {
       id: 'bj-10',
       name: '프리미엄푸드',
@@ -263,6 +271,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[2]}`,
     startedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-9', // 현재 소개 중인 상품
     bj: {
       id: 'bj-11',
       name: '스마트홈리뷰',
@@ -286,6 +295,7 @@ export const mockLiveStreams: LiveEntry[] = [
     isLive: true,
     streamUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_IDS[3]}`,
     startedAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-2', // 현재 소개 중인 상품
     bj: {
       id: 'bj-12',
       name: '수산물마켓',
@@ -295,6 +305,52 @@ export const mockLiveStreams: LiveEntry[] = [
       channelId: 'UCsLiV4WJfkTEHH0b9PmRklw',
       profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
       followerCount: 32000,
+      createdAt: new Date().toISOString(),
+    },
+  },
+  {
+    id: 'live-13',
+    bjId: 'bj-13',
+    platform: 'tiktok',
+    title: '[TikTok 쇼핑] 트렌디 뷰티 픽 라이브',
+    description: '틱톡 라이브 쇼핑으로 베스트 뷰티템을 만나보세요!',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800',
+    viewerCount: 34000,
+    isLive: true,
+    streamUrl: 'https://www.tiktok.com/@beautyshop/video/7345678901234567890',
+    startedAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-4', // 현재 소개 중인 상품
+    bj: {
+      id: 'bj-13',
+      name: 'BeautyShop',
+      platform: 'tiktok',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800',
+      channelUrl: 'https://www.tiktok.com/@beautyshop',
+      profileImageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200',
+      followerCount: 120000,
+      createdAt: new Date().toISOString(),
+    },
+  },
+  {
+    id: 'live-14',
+    bjId: 'bj-14',
+    platform: 'tiktok',
+    title: '[TikTok 쇼핑] 홈데코 추천 라이브',
+    description: '집 꾸미기 필수템 라이브 쇼핑!',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=800',
+    viewerCount: 21000,
+    isLive: true,
+    streamUrl: 'https://www.tiktok.com/@homedeco/video/7456789012345678901',
+    startedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    featuredProductId: 'product-7', // 현재 소개 중인 상품
+    bj: {
+      id: 'bj-14',
+      name: 'HomeDeco',
+      platform: 'tiktok',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=800',
+      channelUrl: 'https://www.tiktok.com/@homedeco',
+      profileImageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200',
+      followerCount: 89000,
       createdAt: new Date().toISOString(),
     },
   },

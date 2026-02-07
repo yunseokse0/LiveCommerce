@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { X, Bell, ShoppingCart, Clock } from 'lucide-react';
 import { useLiveRanking } from '@/store/live-ranking';
-import { extractYouTubeVideoId } from '@/lib/utils';
+import { extractYouTubeVideoId, extractTikTokVideoId } from '@/lib/utils';
 import { PlatformBadge } from '@/components/platform-badge';
 import { LiveChat } from '@/components/live-chat';
 import { NativePlayer } from '@/components/native-player';
@@ -46,15 +46,17 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
     }
 
     // Mock 데이터에서 먼저 찾기
-    import('@/data/mock-products').then(({ mockProducts }) => {
-      const product = mockProducts.find((p) => p.id === featuredProductId);
-      if (product) {
-        setFeaturedProduct(product);
-        setShowProductPopup(true);
-        setOfferEndsAt(Date.now() + 10 * 60 * 1000);
-        return;
-      }
-    });
+    import('@/data/mock-products')
+      .then(({ mockProducts }) => {
+        const product = mockProducts.find((p) => p.id === featuredProductId);
+        if (product) {
+          setFeaturedProduct(product);
+          setShowProductPopup(true);
+          setOfferEndsAt(Date.now() + 10 * 60 * 1000);
+          return;
+        }
+      })
+      .catch(() => {});
 
     // API 호출
     fetch(`/api/products/${featuredProductId}`)
@@ -149,9 +151,10 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
   if (!isOpen) return null;
 
   const videoId = bj.platform === 'youtube' ? extractYouTubeVideoId(streamUrl) : null;
+  const tiktokId = bj.platform === 'tiktok' ? extractTikTokVideoId(streamUrl) : null;
   // YouTube 영상 재생을 위한 최적화된 embed URL
   const embedUrl = videoId
-    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}&mute=0`
+    ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}&mute=1`
     : null;
 
   return (
@@ -175,6 +178,16 @@ export function UniversalPlayer({ bj, title, streamUrl, hlsUrl, featuredProductI
             {bj.platform === 'youtube' && embedUrl ? (
               <iframe
                 src={embedUrl}
+                className="w-full h-full"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                style={{ minHeight: '200px' }}
+                frameBorder="0"
+                title={title}
+              />
+            ) : bj.platform === 'tiktok' && tiktokId ? (
+              <iframe
+                src={`https://www.tiktok.com/embed/v2/${tiktokId}`}
                 className="w-full h-full"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen

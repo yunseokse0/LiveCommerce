@@ -15,6 +15,13 @@ export function PlatformBadge({ platform, className }: PlatformBadgeProps) {
       </div>
     );
   }
+  if (platform === 'tiktok') {
+    return (
+      <div className={`inline-flex items-center gap-1 px-2 py-1 rounded bg-fuchsia-500/20 text-fuchsia-400 text-xs ${className}`}>
+        <span>TikTok</span>
+      </div>
+    );
+  }
 
   return (
     <div className={`inline-flex items-center gap-1 px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-xs ${className}`}>

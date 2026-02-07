@@ -63,3 +63,8 @@ export function extractYouTubeChannelId(url: string): string | null {
   }
   return null;
 }
+
+export function extractTikTokVideoId(url: string): string | null {
+  const match = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+  return match && match[1] ? match[1] : null;
+}
