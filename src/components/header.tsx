@@ -46,6 +46,15 @@ export function Header() {
             <GlobalSearch />
           </div>
           
+          {/* 모바일 상단바: 언어/지역 빠른 변경 */}
+          <div className="md:hidden flex items-center gap-2">
+            <LanguageSelector />
+            <RegionSelector 
+              selectedRegionId={selectedRegionId || undefined}
+              onRegionSelect={handleRegionSelect}
+            />
+          </div>
+          
           {/* 데스크톱 네비게이션 */}
           <nav className="hidden md:flex items-center gap-2 lg:gap-4 flex-wrap">
             <Link href="/live" className="text-sm hover:text-primary transition-colors px-2 py-1 whitespace-nowrap">
@@ -160,15 +169,6 @@ export function Header() {
                 </span>
               )}
             </Link>
-            <div className="px-4 py-3 border-t">
-              <LanguageSelector />
-            </div>
-            <div className="px-4 py-3 border-t">
-              <RegionSelector 
-                selectedRegionId={selectedRegionId || undefined}
-                onRegionSelect={handleRegionSelect}
-              />
-            </div>
             <div className="px-4 py-3 border-t mt-2">
               <UserMenu />
             </div>

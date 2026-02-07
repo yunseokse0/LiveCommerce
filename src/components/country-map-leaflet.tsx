@@ -146,7 +146,20 @@ export function CountryMapLeaflet({ countryCode, selectedRegionId, onRegionSelec
           </div>
         `;
       }
-      popupContent += `</div>`;
+      popupContent += `
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <a href="/map?country=${countryCode}&region=${region.id}&view=list" style="
+            padding:6px 10px; border-radius:8px; font-size:12px; 
+            background: rgba(251, 191, 36, 0.2); color:#fbbf24; border:1px solid rgba(251,191,36,0.3);
+            text-decoration:none; font-weight:600;
+          ">상품 보기</a>
+          <a href="/map?country=${countryCode}&region=${region.id}" style="
+            padding:6px 10px; border-radius:8px; font-size:12px; 
+            background: rgba(63,63,70,0.5); color:#e5e7eb; border:1px solid rgba(113,113,122,0.4);
+            text-decoration:none; font-weight:600;
+          ">바로 구매</a>
+        </div>
+      </div>`;
 
       const marker = L.marker(position);
       marker.bindPopup(popupContent);

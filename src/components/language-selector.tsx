@@ -92,7 +92,7 @@ export function LanguageSelector() {
                     )}
                   >
                     <span className="text-lg">{info.flag}</span>
-                    <span className="flex-1 text-sm">{info.nativeName}</span>
+                    <span className="flex-1 text-sm text-[var(--muted)]">{info.nativeName}</span>
                     {isSelected && <Check className="w-4 h-4 text-amber-400" />}
                   </button>
                 );

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Header } from '@/components/header';
 import { RegionSpecialtyList } from '@/components/region-specialty-list';
@@ -14,23 +15,6 @@ import { useTranslation } from '@/hooks/use-translation';
 import { useI18n, countries } from '@/store/i18n';
 import { getRegionsByCountry, getRegionName } from '@/data/country-regions';
 
-// Leaflet은 클라이언트에서만 렌더링 (SSR 방지) - 로딩 최적화
-const KoreaMapLeaflet = dynamic(
-  () => import('@/components/korea-map-leaflet-v2').then((mod) => ({ default: mod.KoreaMapLeaflet })),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="relative w-full max-w-4xl mx-auto">
-        <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] rounded-3xl overflow-hidden border border-amber-500/30 bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
-            <div className="text-sm text-zinc-400">지도를 불러오는 중...</div>
-          </div>
-        </div>
-      </div>
-    ),
-  }
-);
 const CountryMapLeaflet = dynamic(
   () => import('@/components/country-map-leaflet').then((mod) => ({ default: mod.CountryMapLeaflet })),
   { 
@@ -48,11 +32,12 @@ const CountryMapLeaflet = dynamic(
   }
 );
 
-export default function MapPage() {
-  const { locale, selectedRegionId, setSelectedRegionId, selectedCountryCode } = useI18n();
+function MapPageContent() {
+  const { locale, selectedRegionId, setSelectedRegionId, selectedCountryCode, setSelectedCountryCode } = useI18n();
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [prevCountryCode, setPrevCountryCode] = useState<CountryCode | null>(null);
+  const searchParams = useSearchParams();
 
   const countryCode = selectedCountryCode;
   const regions = getRegionsByCountry(countryCode);
@@ -76,6 +61,22 @@ export default function MapPage() {
     }
   };
 
+  // URL 쿼리 파라미터 처리 (country, region, view)
+  useEffect(() => {
+    const countryParam = searchParams.get('country') as CountryCode | null;
+    const regionParam = searchParams.get('region');
+    const viewParam = searchParams.get('view');
+    if (countryParam && countryParam !== selectedCountryCode) {
+      setSelectedCountryCode(countryParam);
+    }
+    if (regionParam) {
+      setSelectedRegionId(regionParam);
+    }
+    if (viewParam === 'list' || viewParam === 'map') {
+      setViewMode(viewParam);
+    }
+  }, [searchParams, setSelectedCountryCode, setSelectedRegionId, selectedCountryCode]);
+
   // 국가 변경 시 지역 유효성 검사
   useEffect(() => {
     if (!selectedRegionId) return;
@@ -88,7 +89,6 @@ export default function MapPage() {
 
   return (
     <>
-      <Header />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
           {/* 헤더 */}
@@ -140,21 +140,14 @@ export default function MapPage() {
             <>
               {/* 지도 섹션 */}
               <section className="mb-6 sm:mb-8">
-                {countryCode === 'KR' ? (
-                  <KoreaMapLeaflet
-                    onRegionSelect={handleMapRegionSelect}
-                    selectedRegionId={selectedRegion?.id}
-                  />
-                ) : (
-                  <CountryMapLeaflet
-                    countryCode={countryCode}
-                    selectedRegionId={selectedRegion?.id || null}
-                    onRegionSelect={(r) => {
-                      const region = regions.find(x => x.id === r.id);
-                      if (region) setSelectedRegionId(region.id);
-                    }}
-                  />
-                )}
+                <CountryMapLeaflet
+                  countryCode={countryCode}
+                  selectedRegionId={selectedRegion?.id || null}
+                  onRegionSelect={(r) => {
+                    const region = regions.find(x => x.id === r.id);
+                    if (region) setSelectedRegionId(region.id);
+                  }}
+                />
               </section>
 
               {/* 선택된 지역 정보 */}
@@ -286,6 +279,30 @@ export default function MapPage() {
           )}
         </div>
       </main>
+    </>
+  );
+}
+
+export default function MapPage() {
+  return (
+    <>
+      <Header />
+      <Suspense fallback={
+        <main className="min-h-screen bg-background">
+          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+            <div className="relative w-full max-w-4xl mx-auto">
+              <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] rounded-3xl overflow-hidden border border-amber-500/30 bg-background flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+                  <div className="text-sm text-[var(--muted)]">지도를 불러오는 중...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      }>
+        <MapPageContent />
+      </Suspense>
     </>
   );
 }

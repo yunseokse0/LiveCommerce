@@ -109,7 +109,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
                }}>
           {/* 국가 선택 */}
           <div className="p-3 border-b">
-            <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
+            <div className="flex items-center gap-2 text-xs text-[var(--muted)] mb-2">
               <Globe className="w-4 h-4" />
               <span>국가 선택</span>
             </div>
@@ -163,7 +163,7 @@ export function RegionSelector({ selectedRegionId, onRegionSelect, className }: 
                   <p className="text-sm font-medium truncate">
                     {getRegionName(region, locale)}
                   </p>
-                  <p className="text-xs text-zinc-400 truncate">{region.name}</p>
+                  <p className="text-xs text-[var(--muted)] truncate">{region.name}</p>
                 </div>
                 {selectedRegionId === region.id && (
                   <Check className="w-4 h-4 text-amber-400 flex-shrink-0 ml-2" />
